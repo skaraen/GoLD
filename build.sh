@@ -1,0 +1,1 @@
+go build ../golite/golite -o golite 
