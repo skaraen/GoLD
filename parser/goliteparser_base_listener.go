@@ -32,17 +32,23 @@ func (s *BaseGoliteParserListener) EnterTypes(ctx *TypesContext) {}
 // ExitTypes is called when production types is exited.
 func (s *BaseGoliteParserListener) ExitTypes(ctx *TypesContext) {}
 
-// EnterTypedecl is called when production typedecl is entered.
-func (s *BaseGoliteParserListener) EnterTypedecl(ctx *TypedeclContext) {}
+// EnterTypeDecl is called when production typeDecl is entered.
+func (s *BaseGoliteParserListener) EnterTypeDecl(ctx *TypeDeclContext) {}
 
-// ExitTypedecl is called when production typedecl is exited.
-func (s *BaseGoliteParserListener) ExitTypedecl(ctx *TypedeclContext) {}
+// ExitTypeDecl is called when production typeDecl is exited.
+func (s *BaseGoliteParserListener) ExitTypeDecl(ctx *TypeDeclContext) {}
 
 // EnterFields is called when production fields is entered.
 func (s *BaseGoliteParserListener) EnterFields(ctx *FieldsContext) {}
 
 // ExitFields is called when production fields is exited.
 func (s *BaseGoliteParserListener) ExitFields(ctx *FieldsContext) {}
+
+// EnterFieldsPrime is called when production fieldsPrime is entered.
+func (s *BaseGoliteParserListener) EnterFieldsPrime(ctx *FieldsPrimeContext) {}
+
+// ExitFieldsPrime is called when production fieldsPrime is exited.
+func (s *BaseGoliteParserListener) ExitFieldsPrime(ctx *FieldsPrimeContext) {}
 
 // EnterDecl is called when production decl is entered.
 func (s *BaseGoliteParserListener) EnterDecl(ctx *DeclContext) {}
@@ -74,6 +80,12 @@ func (s *BaseGoliteParserListener) EnterIds(ctx *IdsContext) {}
 // ExitIds is called when production ids is exited.
 func (s *BaseGoliteParserListener) ExitIds(ctx *IdsContext) {}
 
+// EnterIdsPrime is called when production idsPrime is entered.
+func (s *BaseGoliteParserListener) EnterIdsPrime(ctx *IdsPrimeContext) {}
+
+// ExitIdsPrime is called when production idsPrime is exited.
+func (s *BaseGoliteParserListener) ExitIdsPrime(ctx *IdsPrimeContext) {}
+
 // EnterFunctions is called when production functions is entered.
 func (s *BaseGoliteParserListener) EnterFunctions(ctx *FunctionsContext) {}
 
@@ -86,17 +98,23 @@ func (s *BaseGoliteParserListener) EnterFunction(ctx *FunctionContext) {}
 // ExitFunction is called when production function is exited.
 func (s *BaseGoliteParserListener) ExitFunction(ctx *FunctionContext) {}
 
-// EnterParameters is called when production parameters is entered.
-func (s *BaseGoliteParserListener) EnterParameters(ctx *ParametersContext) {}
+// EnterParams is called when production params is entered.
+func (s *BaseGoliteParserListener) EnterParams(ctx *ParamsContext) {}
 
-// ExitParameters is called when production parameters is exited.
-func (s *BaseGoliteParserListener) ExitParameters(ctx *ParametersContext) {}
+// ExitParams is called when production params is exited.
+func (s *BaseGoliteParserListener) ExitParams(ctx *ParamsContext) {}
 
-// EnterReturntype is called when production returntype is entered.
-func (s *BaseGoliteParserListener) EnterReturntype(ctx *ReturntypeContext) {}
+// EnterParamsPrime is called when production paramsPrime is entered.
+func (s *BaseGoliteParserListener) EnterParamsPrime(ctx *ParamsPrimeContext) {}
 
-// ExitReturntype is called when production returntype is exited.
-func (s *BaseGoliteParserListener) ExitReturntype(ctx *ReturntypeContext) {}
+// ExitParamsPrime is called when production paramsPrime is exited.
+func (s *BaseGoliteParserListener) ExitParamsPrime(ctx *ParamsPrimeContext) {}
+
+// EnterReturnType is called when production returnType is entered.
+func (s *BaseGoliteParserListener) EnterReturnType(ctx *ReturnTypeContext) {}
+
+// ExitReturnType is called when production returnType is exited.
+func (s *BaseGoliteParserListener) ExitReturnType(ctx *ReturnTypeContext) {}
 
 // EnterStatements is called when production statements is entered.
 func (s *BaseGoliteParserListener) EnterStatements(ctx *StatementsContext) {}
@@ -164,17 +182,29 @@ func (s *BaseGoliteParserListener) EnterInvocation(ctx *InvocationContext) {}
 // ExitInvocation is called when production invocation is exited.
 func (s *BaseGoliteParserListener) ExitInvocation(ctx *InvocationContext) {}
 
-// EnterArguments is called when production arguments is entered.
-func (s *BaseGoliteParserListener) EnterArguments(ctx *ArgumentsContext) {}
+// EnterArgs is called when production args is entered.
+func (s *BaseGoliteParserListener) EnterArgs(ctx *ArgsContext) {}
 
-// ExitArguments is called when production arguments is exited.
-func (s *BaseGoliteParserListener) ExitArguments(ctx *ArgumentsContext) {}
+// ExitArgs is called when production args is exited.
+func (s *BaseGoliteParserListener) ExitArgs(ctx *ArgsContext) {}
 
-// EnterLvalue is called when production lvalue is entered.
-func (s *BaseGoliteParserListener) EnterLvalue(ctx *LvalueContext) {}
+// EnterArgsPrime is called when production argsPrime is entered.
+func (s *BaseGoliteParserListener) EnterArgsPrime(ctx *ArgsPrimeContext) {}
 
-// ExitLvalue is called when production lvalue is exited.
-func (s *BaseGoliteParserListener) ExitLvalue(ctx *LvalueContext) {}
+// ExitArgsPrime is called when production argsPrime is exited.
+func (s *BaseGoliteParserListener) ExitArgsPrime(ctx *ArgsPrimeContext) {}
+
+// EnterLValue is called when production lValue is entered.
+func (s *BaseGoliteParserListener) EnterLValue(ctx *LValueContext) {}
+
+// ExitLValue is called when production lValue is exited.
+func (s *BaseGoliteParserListener) ExitLValue(ctx *LValueContext) {}
+
+// EnterLValuePrime is called when production lValuePrime is entered.
+func (s *BaseGoliteParserListener) EnterLValuePrime(ctx *LValuePrimeContext) {}
+
+// ExitLValuePrime is called when production lValuePrime is exited.
+func (s *BaseGoliteParserListener) ExitLValuePrime(ctx *LValuePrimeContext) {}
 
 // EnterExpression is called when production expression is entered.
 func (s *BaseGoliteParserListener) EnterExpression(ctx *ExpressionContext) {}
@@ -182,29 +212,65 @@ func (s *BaseGoliteParserListener) EnterExpression(ctx *ExpressionContext) {}
 // ExitExpression is called when production expression is exited.
 func (s *BaseGoliteParserListener) ExitExpression(ctx *ExpressionContext) {}
 
-// EnterBoolterm is called when production boolterm is entered.
-func (s *BaseGoliteParserListener) EnterBoolterm(ctx *BooltermContext) {}
+// EnterExprPrime is called when production exprPrime is entered.
+func (s *BaseGoliteParserListener) EnterExprPrime(ctx *ExprPrimeContext) {}
 
-// ExitBoolterm is called when production boolterm is exited.
-func (s *BaseGoliteParserListener) ExitBoolterm(ctx *BooltermContext) {}
+// ExitExprPrime is called when production exprPrime is exited.
+func (s *BaseGoliteParserListener) ExitExprPrime(ctx *ExprPrimeContext) {}
 
-// EnterEqualterm is called when production equalterm is entered.
-func (s *BaseGoliteParserListener) EnterEqualterm(ctx *EqualtermContext) {}
+// EnterBoolTerm is called when production boolTerm is entered.
+func (s *BaseGoliteParserListener) EnterBoolTerm(ctx *BoolTermContext) {}
 
-// ExitEqualterm is called when production equalterm is exited.
-func (s *BaseGoliteParserListener) ExitEqualterm(ctx *EqualtermContext) {}
+// ExitBoolTerm is called when production boolTerm is exited.
+func (s *BaseGoliteParserListener) ExitBoolTerm(ctx *BoolTermContext) {}
 
-// EnterRelationterm is called when production relationterm is entered.
-func (s *BaseGoliteParserListener) EnterRelationterm(ctx *RelationtermContext) {}
+// EnterBoolTermPrime is called when production boolTermPrime is entered.
+func (s *BaseGoliteParserListener) EnterBoolTermPrime(ctx *BoolTermPrimeContext) {}
 
-// ExitRelationterm is called when production relationterm is exited.
-func (s *BaseGoliteParserListener) ExitRelationterm(ctx *RelationtermContext) {}
+// ExitBoolTermPrime is called when production boolTermPrime is exited.
+func (s *BaseGoliteParserListener) ExitBoolTermPrime(ctx *BoolTermPrimeContext) {}
 
-// EnterSimpleterm is called when production simpleterm is entered.
-func (s *BaseGoliteParserListener) EnterSimpleterm(ctx *SimpletermContext) {}
+// EnterEqualTermPrime is called when production equalTermPrime is entered.
+func (s *BaseGoliteParserListener) EnterEqualTermPrime(ctx *EqualTermPrimeContext) {}
 
-// ExitSimpleterm is called when production simpleterm is exited.
-func (s *BaseGoliteParserListener) ExitSimpleterm(ctx *SimpletermContext) {}
+// ExitEqualTermPrime is called when production equalTermPrime is exited.
+func (s *BaseGoliteParserListener) ExitEqualTermPrime(ctx *EqualTermPrimeContext) {}
+
+// EnterEqualTerm is called when production equalTerm is entered.
+func (s *BaseGoliteParserListener) EnterEqualTerm(ctx *EqualTermContext) {}
+
+// ExitEqualTerm is called when production equalTerm is exited.
+func (s *BaseGoliteParserListener) ExitEqualTerm(ctx *EqualTermContext) {}
+
+// EnterRelTermPrime is called when production relTermPrime is entered.
+func (s *BaseGoliteParserListener) EnterRelTermPrime(ctx *RelTermPrimeContext) {}
+
+// ExitRelTermPrime is called when production relTermPrime is exited.
+func (s *BaseGoliteParserListener) ExitRelTermPrime(ctx *RelTermPrimeContext) {}
+
+// EnterRelTerm is called when production relTerm is entered.
+func (s *BaseGoliteParserListener) EnterRelTerm(ctx *RelTermContext) {}
+
+// ExitRelTerm is called when production relTerm is exited.
+func (s *BaseGoliteParserListener) ExitRelTerm(ctx *RelTermContext) {}
+
+// EnterSimpleTermPrime is called when production simpleTermPrime is entered.
+func (s *BaseGoliteParserListener) EnterSimpleTermPrime(ctx *SimpleTermPrimeContext) {}
+
+// ExitSimpleTermPrime is called when production simpleTermPrime is exited.
+func (s *BaseGoliteParserListener) ExitSimpleTermPrime(ctx *SimpleTermPrimeContext) {}
+
+// EnterSimpleTerm is called when production simpleTerm is entered.
+func (s *BaseGoliteParserListener) EnterSimpleTerm(ctx *SimpleTermContext) {}
+
+// ExitSimpleTerm is called when production simpleTerm is exited.
+func (s *BaseGoliteParserListener) ExitSimpleTerm(ctx *SimpleTermContext) {}
+
+// EnterTermPrime is called when production termPrime is entered.
+func (s *BaseGoliteParserListener) EnterTermPrime(ctx *TermPrimeContext) {}
+
+// ExitTermPrime is called when production termPrime is exited.
+func (s *BaseGoliteParserListener) ExitTermPrime(ctx *TermPrimeContext) {}
 
 // EnterTerm is called when production term is entered.
 func (s *BaseGoliteParserListener) EnterTerm(ctx *TermContext) {}
@@ -212,17 +278,17 @@ func (s *BaseGoliteParserListener) EnterTerm(ctx *TermContext) {}
 // ExitTerm is called when production term is exited.
 func (s *BaseGoliteParserListener) ExitTerm(ctx *TermContext) {}
 
-// EnterUnaryterm is called when production unaryterm is entered.
-func (s *BaseGoliteParserListener) EnterUnaryterm(ctx *UnarytermContext) {}
+// EnterUnaryTerm is called when production unaryTerm is entered.
+func (s *BaseGoliteParserListener) EnterUnaryTerm(ctx *UnaryTermContext) {}
 
-// ExitUnaryterm is called when production unaryterm is exited.
-func (s *BaseGoliteParserListener) ExitUnaryterm(ctx *UnarytermContext) {}
+// ExitUnaryTerm is called when production unaryTerm is exited.
+func (s *BaseGoliteParserListener) ExitUnaryTerm(ctx *UnaryTermContext) {}
 
-// EnterSelectorterm is called when production selectorterm is entered.
-func (s *BaseGoliteParserListener) EnterSelectorterm(ctx *SelectortermContext) {}
+// EnterSelectorTerm is called when production selectorTerm is entered.
+func (s *BaseGoliteParserListener) EnterSelectorTerm(ctx *SelectorTermContext) {}
 
-// ExitSelectorterm is called when production selectorterm is exited.
-func (s *BaseGoliteParserListener) ExitSelectorterm(ctx *SelectortermContext) {}
+// ExitSelectorTerm is called when production selectorTerm is exited.
+func (s *BaseGoliteParserListener) ExitSelectorTerm(ctx *SelectorTermContext) {}
 
 // EnterFactor is called when production factor is entered.
 func (s *BaseGoliteParserListener) EnterFactor(ctx *FactorContext) {}

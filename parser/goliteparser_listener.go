@@ -13,11 +13,14 @@ type GoliteParserListener interface {
 	// EnterTypes is called when entering the types production.
 	EnterTypes(c *TypesContext)
 
-	// EnterTypedecl is called when entering the typedecl production.
-	EnterTypedecl(c *TypedeclContext)
+	// EnterTypeDecl is called when entering the typeDecl production.
+	EnterTypeDecl(c *TypeDeclContext)
 
 	// EnterFields is called when entering the fields production.
 	EnterFields(c *FieldsContext)
+
+	// EnterFieldsPrime is called when entering the fieldsPrime production.
+	EnterFieldsPrime(c *FieldsPrimeContext)
 
 	// EnterDecl is called when entering the decl production.
 	EnterDecl(c *DeclContext)
@@ -34,17 +37,23 @@ type GoliteParserListener interface {
 	// EnterIds is called when entering the ids production.
 	EnterIds(c *IdsContext)
 
+	// EnterIdsPrime is called when entering the idsPrime production.
+	EnterIdsPrime(c *IdsPrimeContext)
+
 	// EnterFunctions is called when entering the functions production.
 	EnterFunctions(c *FunctionsContext)
 
 	// EnterFunction is called when entering the function production.
 	EnterFunction(c *FunctionContext)
 
-	// EnterParameters is called when entering the parameters production.
-	EnterParameters(c *ParametersContext)
+	// EnterParams is called when entering the params production.
+	EnterParams(c *ParamsContext)
 
-	// EnterReturntype is called when entering the returntype production.
-	EnterReturntype(c *ReturntypeContext)
+	// EnterParamsPrime is called when entering the paramsPrime production.
+	EnterParamsPrime(c *ParamsPrimeContext)
+
+	// EnterReturnType is called when entering the returnType production.
+	EnterReturnType(c *ReturnTypeContext)
 
 	// EnterStatements is called when entering the statements production.
 	EnterStatements(c *StatementsContext)
@@ -79,35 +88,59 @@ type GoliteParserListener interface {
 	// EnterInvocation is called when entering the invocation production.
 	EnterInvocation(c *InvocationContext)
 
-	// EnterArguments is called when entering the arguments production.
-	EnterArguments(c *ArgumentsContext)
+	// EnterArgs is called when entering the args production.
+	EnterArgs(c *ArgsContext)
 
-	// EnterLvalue is called when entering the lvalue production.
-	EnterLvalue(c *LvalueContext)
+	// EnterArgsPrime is called when entering the argsPrime production.
+	EnterArgsPrime(c *ArgsPrimeContext)
+
+	// EnterLValue is called when entering the lValue production.
+	EnterLValue(c *LValueContext)
+
+	// EnterLValuePrime is called when entering the lValuePrime production.
+	EnterLValuePrime(c *LValuePrimeContext)
 
 	// EnterExpression is called when entering the expression production.
 	EnterExpression(c *ExpressionContext)
 
-	// EnterBoolterm is called when entering the boolterm production.
-	EnterBoolterm(c *BooltermContext)
+	// EnterExprPrime is called when entering the exprPrime production.
+	EnterExprPrime(c *ExprPrimeContext)
 
-	// EnterEqualterm is called when entering the equalterm production.
-	EnterEqualterm(c *EqualtermContext)
+	// EnterBoolTerm is called when entering the boolTerm production.
+	EnterBoolTerm(c *BoolTermContext)
 
-	// EnterRelationterm is called when entering the relationterm production.
-	EnterRelationterm(c *RelationtermContext)
+	// EnterBoolTermPrime is called when entering the boolTermPrime production.
+	EnterBoolTermPrime(c *BoolTermPrimeContext)
 
-	// EnterSimpleterm is called when entering the simpleterm production.
-	EnterSimpleterm(c *SimpletermContext)
+	// EnterEqualTermPrime is called when entering the equalTermPrime production.
+	EnterEqualTermPrime(c *EqualTermPrimeContext)
+
+	// EnterEqualTerm is called when entering the equalTerm production.
+	EnterEqualTerm(c *EqualTermContext)
+
+	// EnterRelTermPrime is called when entering the relTermPrime production.
+	EnterRelTermPrime(c *RelTermPrimeContext)
+
+	// EnterRelTerm is called when entering the relTerm production.
+	EnterRelTerm(c *RelTermContext)
+
+	// EnterSimpleTermPrime is called when entering the simpleTermPrime production.
+	EnterSimpleTermPrime(c *SimpleTermPrimeContext)
+
+	// EnterSimpleTerm is called when entering the simpleTerm production.
+	EnterSimpleTerm(c *SimpleTermContext)
+
+	// EnterTermPrime is called when entering the termPrime production.
+	EnterTermPrime(c *TermPrimeContext)
 
 	// EnterTerm is called when entering the term production.
 	EnterTerm(c *TermContext)
 
-	// EnterUnaryterm is called when entering the unaryterm production.
-	EnterUnaryterm(c *UnarytermContext)
+	// EnterUnaryTerm is called when entering the unaryTerm production.
+	EnterUnaryTerm(c *UnaryTermContext)
 
-	// EnterSelectorterm is called when entering the selectorterm production.
-	EnterSelectorterm(c *SelectortermContext)
+	// EnterSelectorTerm is called when entering the selectorTerm production.
+	EnterSelectorTerm(c *SelectorTermContext)
 
 	// EnterFactor is called when entering the factor production.
 	EnterFactor(c *FactorContext)
@@ -118,11 +151,14 @@ type GoliteParserListener interface {
 	// ExitTypes is called when exiting the types production.
 	ExitTypes(c *TypesContext)
 
-	// ExitTypedecl is called when exiting the typedecl production.
-	ExitTypedecl(c *TypedeclContext)
+	// ExitTypeDecl is called when exiting the typeDecl production.
+	ExitTypeDecl(c *TypeDeclContext)
 
 	// ExitFields is called when exiting the fields production.
 	ExitFields(c *FieldsContext)
+
+	// ExitFieldsPrime is called when exiting the fieldsPrime production.
+	ExitFieldsPrime(c *FieldsPrimeContext)
 
 	// ExitDecl is called when exiting the decl production.
 	ExitDecl(c *DeclContext)
@@ -139,17 +175,23 @@ type GoliteParserListener interface {
 	// ExitIds is called when exiting the ids production.
 	ExitIds(c *IdsContext)
 
+	// ExitIdsPrime is called when exiting the idsPrime production.
+	ExitIdsPrime(c *IdsPrimeContext)
+
 	// ExitFunctions is called when exiting the functions production.
 	ExitFunctions(c *FunctionsContext)
 
 	// ExitFunction is called when exiting the function production.
 	ExitFunction(c *FunctionContext)
 
-	// ExitParameters is called when exiting the parameters production.
-	ExitParameters(c *ParametersContext)
+	// ExitParams is called when exiting the params production.
+	ExitParams(c *ParamsContext)
 
-	// ExitReturntype is called when exiting the returntype production.
-	ExitReturntype(c *ReturntypeContext)
+	// ExitParamsPrime is called when exiting the paramsPrime production.
+	ExitParamsPrime(c *ParamsPrimeContext)
+
+	// ExitReturnType is called when exiting the returnType production.
+	ExitReturnType(c *ReturnTypeContext)
 
 	// ExitStatements is called when exiting the statements production.
 	ExitStatements(c *StatementsContext)
@@ -184,35 +226,59 @@ type GoliteParserListener interface {
 	// ExitInvocation is called when exiting the invocation production.
 	ExitInvocation(c *InvocationContext)
 
-	// ExitArguments is called when exiting the arguments production.
-	ExitArguments(c *ArgumentsContext)
+	// ExitArgs is called when exiting the args production.
+	ExitArgs(c *ArgsContext)
 
-	// ExitLvalue is called when exiting the lvalue production.
-	ExitLvalue(c *LvalueContext)
+	// ExitArgsPrime is called when exiting the argsPrime production.
+	ExitArgsPrime(c *ArgsPrimeContext)
+
+	// ExitLValue is called when exiting the lValue production.
+	ExitLValue(c *LValueContext)
+
+	// ExitLValuePrime is called when exiting the lValuePrime production.
+	ExitLValuePrime(c *LValuePrimeContext)
 
 	// ExitExpression is called when exiting the expression production.
 	ExitExpression(c *ExpressionContext)
 
-	// ExitBoolterm is called when exiting the boolterm production.
-	ExitBoolterm(c *BooltermContext)
+	// ExitExprPrime is called when exiting the exprPrime production.
+	ExitExprPrime(c *ExprPrimeContext)
 
-	// ExitEqualterm is called when exiting the equalterm production.
-	ExitEqualterm(c *EqualtermContext)
+	// ExitBoolTerm is called when exiting the boolTerm production.
+	ExitBoolTerm(c *BoolTermContext)
 
-	// ExitRelationterm is called when exiting the relationterm production.
-	ExitRelationterm(c *RelationtermContext)
+	// ExitBoolTermPrime is called when exiting the boolTermPrime production.
+	ExitBoolTermPrime(c *BoolTermPrimeContext)
 
-	// ExitSimpleterm is called when exiting the simpleterm production.
-	ExitSimpleterm(c *SimpletermContext)
+	// ExitEqualTermPrime is called when exiting the equalTermPrime production.
+	ExitEqualTermPrime(c *EqualTermPrimeContext)
+
+	// ExitEqualTerm is called when exiting the equalTerm production.
+	ExitEqualTerm(c *EqualTermContext)
+
+	// ExitRelTermPrime is called when exiting the relTermPrime production.
+	ExitRelTermPrime(c *RelTermPrimeContext)
+
+	// ExitRelTerm is called when exiting the relTerm production.
+	ExitRelTerm(c *RelTermContext)
+
+	// ExitSimpleTermPrime is called when exiting the simpleTermPrime production.
+	ExitSimpleTermPrime(c *SimpleTermPrimeContext)
+
+	// ExitSimpleTerm is called when exiting the simpleTerm production.
+	ExitSimpleTerm(c *SimpleTermContext)
+
+	// ExitTermPrime is called when exiting the termPrime production.
+	ExitTermPrime(c *TermPrimeContext)
 
 	// ExitTerm is called when exiting the term production.
 	ExitTerm(c *TermContext)
 
-	// ExitUnaryterm is called when exiting the unaryterm production.
-	ExitUnaryterm(c *UnarytermContext)
+	// ExitUnaryTerm is called when exiting the unaryTerm production.
+	ExitUnaryTerm(c *UnaryTermContext)
 
-	// ExitSelectorterm is called when exiting the selectorterm production.
-	ExitSelectorterm(c *SelectortermContext)
+	// ExitSelectorTerm is called when exiting the selectorTerm production.
+	ExitSelectorTerm(c *SelectorTermContext)
 
 	// ExitFactor is called when exiting the factor production.
 	ExitFactor(c *FactorContext)

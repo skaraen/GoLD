@@ -1,6 +1,7 @@
 package lexer
 
 import (
+	"fmt"
 	"golite/context"
 
 	"github.com/antlr/antlr4/runtime/Go/antlr/v4"
@@ -44,4 +45,13 @@ func NewLexer(inputSourcePath string) Lexer {
 	lexer.antrlLexer = antlrLexer
 	lexer.stream = tokenStream
 	return lexer
+}
+
+func (lexer *lexerWrapper) PrintTokens() {
+    lexer.stream.Fill()
+    for _, token := range lexer.stream.GetAllTokens() {
+        if token.GetTokenType() != antlr.TokenEOF {
+            fmt.Printf("TOKEN.%v(%v,%v)\n", lexer.antrlLexer.SymbolicNames[token.GetTokenType()], token.GetStart(), token.GetText())
+        }
+    }
 }

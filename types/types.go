@@ -22,6 +22,12 @@ func (structTy *StructTy) String() string {
 	return "struct"
 }
 
+type StrTy struct {}
+
+func (structTy *StrTy) String() string {
+	return "string"
+}
+
 func StringToType(str string) Type {
 	if str == "int" {
 		return IntTySig
@@ -29,6 +35,8 @@ func StringToType(str string) Type {
 		return BoolTySig
 	} else if str == "struct" {
 		return StructTySig
+	} else if str == "string" {
+		return StrTySig
 	}
 	panic("Type not found " + str)
 }
@@ -36,9 +44,11 @@ func StringToType(str string) Type {
 var IntTySig *IntTy
 var BoolTySig *BoolTy
 var StructTySig *StructTy
+var StrTySig *StrTy
 
 func init() {
 	IntTySig = &IntTy{}
-	BoolTySig = &BoolTySig{}
-	StructTySig = &StructTySig{}
+	BoolTySig = &BoolTy{}
+	StructTySig = &StructTy{}
+	StrTySig = &StrTy{}
 }
