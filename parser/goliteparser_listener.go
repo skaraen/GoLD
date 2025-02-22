@@ -10,8 +10,8 @@ type GoliteParserListener interface {
 	// EnterProgram is called when entering the program production.
 	EnterProgram(c *ProgramContext)
 
-	// EnterTypes is called when entering the types production.
-	EnterTypes(c *TypesContext)
+	// EnterUserTypes is called when entering the userTypes production.
+	EnterUserTypes(c *UserTypesContext)
 
 	// EnterTypeDecl is called when entering the typeDecl production.
 	EnterTypeDecl(c *TypeDeclContext)
@@ -24,6 +24,9 @@ type GoliteParserListener interface {
 
 	// EnterDecl is called when entering the decl production.
 	EnterDecl(c *DeclContext)
+
+	// EnterReference is called when entering the reference production.
+	EnterReference(c *ReferenceContext)
 
 	// EnterType is called when entering the type production.
 	EnterType(c *TypeContext)
@@ -148,8 +151,8 @@ type GoliteParserListener interface {
 	// ExitProgram is called when exiting the program production.
 	ExitProgram(c *ProgramContext)
 
-	// ExitTypes is called when exiting the types production.
-	ExitTypes(c *TypesContext)
+	// ExitUserTypes is called when exiting the userTypes production.
+	ExitUserTypes(c *UserTypesContext)
 
 	// ExitTypeDecl is called when exiting the typeDecl production.
 	ExitTypeDecl(c *TypeDeclContext)
@@ -162,6 +165,9 @@ type GoliteParserListener interface {
 
 	// ExitDecl is called when exiting the decl production.
 	ExitDecl(c *DeclContext)
+
+	// ExitReference is called when exiting the reference production.
+	ExitReference(c *ReferenceContext)
 
 	// ExitType is called when exiting the type production.
 	ExitType(c *TypeContext)

@@ -2,7 +2,11 @@ package ast
 
 import (
 	"bytes"
+	"fmt"
+	"golite/context"
+	st "golite/symboltable"
 	"golite/token"
+	"golite/types"
 )
 
 type ConditionalStmt struct {
@@ -26,4 +30,22 @@ func (cs *ConditionalStmt) String() string {
 	}
 
 	return out.String()
+}
+
+func (cs *ConditionalStmt) TypeCheck(errors []*context.CompilerError, funcEntry *st.FuncEntry, tables *st.SymbolTables) []*context.CompilerError {
+	var eTy types.Type
+	eTy, errors = cs.expr.TypeCheck(errors, funcEntry, tables)
+	if eTy.String() != "bool" {
+		msg := fmt.Sprintf("condition (%s) is not a boolean expression", cs.expr.String())
+		semError := context.NewCompilerError(cs.Line, cs.Column, msg, context.SEMANTICS)
+		errors = append(errors, semError)
+	}
+
+	errors = cs.ifBlock.TypeCheck(errors, funcEntry, tables)
+
+	if (cs.elseBlock != nil) {
+		errors = cs.elseBlock.TypeCheck(errors, funcEntry, tables)
+	}
+
+	return errors
 }

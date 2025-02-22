@@ -10,6 +10,7 @@ import (
 type Lexer interface {
 	GetTokenStream() *antlr.CommonTokenStream
 	GetErrors() []*context.CompilerError
+	PrintAllTokens()
 }
 
 type lexerWrapper struct {
@@ -35,6 +36,16 @@ func (lexer *lexerWrapper) GetErrors() []*context.CompilerError {
 	return lexer.errors
 }
 
+func (lexer *lexerWrapper) PrintAllTokens() {
+    lexer.stream.Fill()
+	fmt.Printf("Length: %d\n", len(lexer.stream.GetAllTokens()))
+    for _, token := range lexer.stream.GetAllTokens() {
+        if token.GetTokenType() != antlr.TokenEOF {
+            fmt.Printf("TOKEN.%v(%v,%v)\n", lexer.antrlLexer.SymbolicNames[token.GetTokenType()], token.GetStart(), token.GetText())
+        }
+    }
+}
+
 func NewLexer(inputSourcePath string) Lexer {
 	input, _ := antlr.NewFileStream(inputSourcePath)
 	lexer := &lexerWrapper{antlr.NewDefaultErrorListener(), nil, nil, nil}
@@ -45,13 +56,4 @@ func NewLexer(inputSourcePath string) Lexer {
 	lexer.antrlLexer = antlrLexer
 	lexer.stream = tokenStream
 	return lexer
-}
-
-func (lexer *lexerWrapper) PrintTokens() {
-    lexer.stream.Fill()
-    for _, token := range lexer.stream.GetAllTokens() {
-        if token.GetTokenType() != antlr.TokenEOF {
-            fmt.Printf("TOKEN.%v(%v,%v)\n", lexer.antrlLexer.SymbolicNames[token.GetTokenType()], token.GetStart(), token.GetText())
-        }
-    }
 }

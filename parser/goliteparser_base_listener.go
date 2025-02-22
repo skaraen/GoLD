@@ -26,11 +26,11 @@ func (s *BaseGoliteParserListener) EnterProgram(ctx *ProgramContext) {}
 // ExitProgram is called when production program is exited.
 func (s *BaseGoliteParserListener) ExitProgram(ctx *ProgramContext) {}
 
-// EnterTypes is called when production types is entered.
-func (s *BaseGoliteParserListener) EnterTypes(ctx *TypesContext) {}
+// EnterUserTypes is called when production userTypes is entered.
+func (s *BaseGoliteParserListener) EnterUserTypes(ctx *UserTypesContext) {}
 
-// ExitTypes is called when production types is exited.
-func (s *BaseGoliteParserListener) ExitTypes(ctx *TypesContext) {}
+// ExitUserTypes is called when production userTypes is exited.
+func (s *BaseGoliteParserListener) ExitUserTypes(ctx *UserTypesContext) {}
 
 // EnterTypeDecl is called when production typeDecl is entered.
 func (s *BaseGoliteParserListener) EnterTypeDecl(ctx *TypeDeclContext) {}
@@ -55,6 +55,12 @@ func (s *BaseGoliteParserListener) EnterDecl(ctx *DeclContext) {}
 
 // ExitDecl is called when production decl is exited.
 func (s *BaseGoliteParserListener) ExitDecl(ctx *DeclContext) {}
+
+// EnterReference is called when production reference is entered.
+func (s *BaseGoliteParserListener) EnterReference(ctx *ReferenceContext) {}
+
+// ExitReference is called when production reference is exited.
+func (s *BaseGoliteParserListener) ExitReference(ctx *ReferenceContext) {}
 
 // EnterType is called when production type is entered.
 func (s *BaseGoliteParserListener) EnterType(ctx *TypeContext) {}
