@@ -42,7 +42,7 @@ func (f *Function) String() string {
 
 func (f *Function) BuildSymbolTable(errors []*context.CompilerError, tables *st.SymbolTables) []*context.CompilerError {
 	if fn, exists := tables.Funcs.Contains(f.id); exists {
-		msg := fmt.Sprintf("redefinition of function (%s) located at (%d,%d)", f.id, fn.Line, fn.Column)
+		msg := fmt.Sprintf("redeclaration of function (%s) located at (%d,%d)", f.id, fn.Line, fn.Column)
 		semError := context.NewCompilerError(f.Line, f.Column, msg, context.SEMANTICS)
 			
 		errors = append(errors, semError)
@@ -55,7 +55,7 @@ func (f *Function) BuildSymbolTable(errors []*context.CompilerError, tables *st.
 		param := pExp.(*Decl)
 
 		if p, exists := funcEntry.Variables.Contains(param.id); exists {
-			msg := fmt.Sprintf("redefinition of parameter (%s) located at (%d,%d)", param.id, p.Line, p.Column)
+			msg := fmt.Sprintf("redeclaration of parameter (%s) located at (%d,%d)", param.id, p.Line, p.Column)
 			semError := context.NewCompilerError(f.Line, f.Column, msg, context.SEMANTICS)
 				
 			errors = append(errors, semError)
@@ -63,17 +63,19 @@ func (f *Function) BuildSymbolTable(errors []*context.CompilerError, tables *st.
 		}
 
 		varEntry := st.NewVarEntry(param.id, param.dType, st.LOCAL, param.Token)
-		funcEntry.Variables.Insert(param.id, varEntry)
+		funcEntry.Signature = append(funcEntry.Signature, param.dType)
+		funcEntry.Parameters.Insert(param.id, varEntry)
 	}
 
 	declrList := f.declarations.(*Declarations).declrList
+	funcEntry.Variables.SetParent(funcEntry.Parameters)
 
 	for _, declr := range (declrList) {
 		ids := declr.ids.(*Ids)
 
 		for _, id := range(ids.idsList) {
 			if st, exists := tables.Structs.Contains(id); exists {
-				msg := fmt.Sprintf("redefinition of user defined type (%s) located at (%d,%d)", id, st.Line, st.Column)
+				msg := fmt.Sprintf("redeclaration of user defined type (%s) located at (%d,%d)", id, st.Line, st.Column)
 				semError := context.NewCompilerError(ids.Line, ids.Column, msg, context.SEMANTICS)
 				
 				errors = append(errors, semError)
@@ -81,7 +83,7 @@ func (f *Function) BuildSymbolTable(errors []*context.CompilerError, tables *st.
 			}
 
 			if v, exists := funcEntry.Variables.Contains(id); exists {
-				msg := fmt.Sprintf("redefinition of variable (%s) located at (%d,%d)", id, v.Line, v.Column)
+				msg := fmt.Sprintf("redeclaration of variable (%s) located at (%d,%d)", id, v.Line, v.Column)
 				semError := context.NewCompilerError(ids.Line, ids.Column, msg, context.SEMANTICS)
 				
 				errors = append(errors, semError)
@@ -93,7 +95,7 @@ func (f *Function) BuildSymbolTable(errors []*context.CompilerError, tables *st.
 		}
 	}
 
-	funcEntry.Variables.SetParent(tables.Globals)
+	funcEntry.Parameters.SetParent(tables.Globals)
 	tables.Funcs.Insert(f.id, funcEntry)
 	return errors
 }

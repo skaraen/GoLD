@@ -2,10 +2,12 @@ package ast
 
 import (
 	"bytes"
+	"fmt"
 	"golite/context"
 	st "golite/symboltable"
 	"golite/token"
 	"golite/types"
+	"strings"
 )
 
 type Functions struct {
@@ -30,6 +32,31 @@ func (f *Functions) String() string {
 func (f *Functions) BuildSymbolTable(errors []*context.CompilerError, tables *st.SymbolTables) []*context.CompilerError {
 	for _, fn := range (f.funcList) {
 		errors = fn.BuildSymbolTable(errors, tables)
+	}
+
+	if mainFn, exists := tables.Funcs.Contains("main"); !exists {
+		msg := "main function absent in program"
+		semError := context.NewCompilerError(f.Line, f.Column, msg, context.SEMANTICS)
+			
+		errors = append(errors, semError)
+	} else {
+		if mainFn.RetTy.String() != "nil" {
+			msg := fmt.Sprintf("main function has non void return type (%s)", mainFn.RetTy.String())
+			semError := context.NewCompilerError(f.Line, f.Column, msg, context.SEMANTICS)
+			
+			errors = append(errors, semError)
+		} 
+
+		if len(mainFn.Signature) > 0 {
+			var str []string
+			for _, sigTy := range (mainFn.Signature) {
+				str = append(str, sigTy.String())
+			}
+			msg := fmt.Sprintf("main function has arguments (%s)", strings.Join(str, ", "))
+			semError := context.NewCompilerError(f.Line, f.Column, msg, context.SEMANTICS)
+			
+			errors = append(errors, semError)
+		}
 	}
 
 	return errors

@@ -36,7 +36,7 @@ func (cs *ConditionalStmt) TypeCheck(errors []*context.CompilerError, funcEntry 
 	var eTy types.Type
 	eTy, errors = cs.expr.TypeCheck(errors, funcEntry, tables)
 	if eTy.String() != "bool" {
-		msg := fmt.Sprintf("condition (%s) is not a boolean expression", cs.expr.String())
+		msg := fmt.Sprintf("Expected boolean expression in if conditional, found %s expression (%s) instead", eTy.String(), cs.expr.String())
 		semError := context.NewCompilerError(cs.Line, cs.Column, msg, context.SEMANTICS)
 		errors = append(errors, semError)
 	}

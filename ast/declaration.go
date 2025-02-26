@@ -38,7 +38,7 @@ func (d *Declaration) BuildSymbolTable(errors []*context.CompilerError, tables *
 
 	for _, id := range(ids.idsList) {
 		if st, exists := tables.Structs.Contains(id); exists {
-			msg := fmt.Sprintf("redefinition of user defined type (%s) located at (%d,%d)", id, st.Line, st.Column)
+			msg := fmt.Sprintf("redeclaration of user defined type (%s) located at (%d,%d)", id, st.Line, st.Column)
 			semError := context.NewCompilerError(ids.Line, ids.Column, msg, context.SEMANTICS)
 			
 			errors = append(errors, semError)
@@ -46,7 +46,7 @@ func (d *Declaration) BuildSymbolTable(errors []*context.CompilerError, tables *
 		}
 
 		if gv, exists := tables.Globals.Contains(id); exists {
-			msg := fmt.Sprintf("redefinition of global variable (%s) located at (%d,%d)", id, gv.Line, gv.Column)
+			msg := fmt.Sprintf("redeclaration of global variable (%s) located at (%d,%d)", id, gv.Line, gv.Column)
 			semError := context.NewCompilerError(ids.Line, ids.Column, msg, context.SEMANTICS)
 			
 			errors = append(errors, semError)

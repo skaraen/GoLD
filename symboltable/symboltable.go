@@ -28,13 +28,15 @@ func NewVarEntry(name string, ty types.Type, scope VarScope, token *token.Token)
 
 type FuncEntry struct {
 	*token.Token
-	Name       string
-	RetTy      types.Type
-	Variables  *SymbolTable[*VarEntry]
+	Name       	string
+	RetTy      	types.Type
+	Signature	[]types.Type
+	Parameters 	*SymbolTable[*VarEntry]
+	Variables  	*SymbolTable[*VarEntry]
 }
 
 func NewFuncEntry(name string, returnTy types.Type, token *token.Token) *FuncEntry {
-	return &FuncEntry{token, name, returnTy, NewSymbolTable[*VarEntry](nil)}
+	return &FuncEntry{token, name, returnTy, make([]types.Type, 0), NewSymbolTable[*VarEntry](nil), NewSymbolTable[*VarEntry](nil)}
 }
 
 type StructEntry struct {

@@ -28,7 +28,7 @@ func (td *TypeDecl) String() string {
 
 func (t *TypeDecl) BuildSymbolTable(errors []*context.CompilerError, structTable *st.SymbolTable[*st.StructEntry]) []*context.CompilerError {
 	if st, ok := structTable.Contains(t.id); ok {
-		msg := fmt.Sprintf("redefinition of user defined type (%s) located at (%d,%d)", t.id, st.Line, st.Column)
+		msg := fmt.Sprintf("redeclaration of user defined type (%s) located at (%d,%d)", t.id, st.Line, st.Column)
 		semError := context.NewCompilerError(t.Line, t.Column, msg, context.SEMANTICS)
 			
 		errors = append(errors, semError)
@@ -41,7 +41,7 @@ func (t *TypeDecl) BuildSymbolTable(errors []*context.CompilerError, structTable
 		f := field.(*Decl)
 
 		if fld, ok := structEntry.Fields.Contains(f.id); ok {
-			msg := fmt.Sprintf("redefinition of field (%s) located at (%d,%d)", f.id, fld.Line, fld.Column)
+			msg := fmt.Sprintf("redeclaration of field (%s) located at (%d,%d)", f.id, fld.Line, fld.Column)
 			semError := context.NewCompilerError(f.Line, f.Column, msg, context.SEMANTICS)
 			
 			errors = append(errors, semError)
