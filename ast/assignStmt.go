@@ -3,7 +3,9 @@ package ast
 import (
 	"bytes"
 	"fmt"
+	"golite/cfg"
 	"golite/context"
+	"golite/llvm"
 	st "golite/symboltable"
 	"golite/token"
 	"golite/types"
@@ -46,4 +48,15 @@ func (as *AssignStmt) TypeCheck(errors []*context.CompilerError, funcEntry *st.F
 	}
 
 	return errors
+}
+
+func (as *AssignStmt) TranslateToLLVMStack(currBlk *cfg.Block, exitBlk *cfg.Block, llvmProgram *llvm.LLVMProgram, funcEntry *st.FuncEntry, tables *st.SymbolTables) *cfg.Block {
+	lRegister := as.lValue.TranslateToLLVMStack(funcEntry, tables, currBlk, llvmProgram)
+	rRegister := as.rExpression.TranslateToLLVMStack(funcEntry, tables, currBlk, llvmProgram)
+	lType := as.lValue.GetType(funcEntry, tables)
+	rType := as.rExpression.GetType(funcEntry, tables)
+
+	currBlk.Instns = append(currBlk.Instns, llvm.NewStoreInstn(lRegister.(*llvm.LLVMRegister), lType, rRegister, rType))
+	
+	return currBlk
 }

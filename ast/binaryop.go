@@ -3,7 +3,10 @@ package ast
 import (
 	"bytes"
 	"fmt"
+	"golite/cfg"
 	"golite/context"
+	"golite/llvm"
+	op "golite/operators"
 	st "golite/symboltable"
 	"golite/token"
 	"golite/types"
@@ -11,14 +14,14 @@ import (
 
 type BinaryOp struct {
 	*token.Token
-	operator 		Operator
+	operator 		op.Operator
 	left 			Expression
 	right 			Expression
 	leftInfType		types.Type
 	rightInfType	types.Type
 }
 
-func NewBinaryOp(token *token.Token, operator Operator, left Expression, right Expression) *BinaryOp {
+func NewBinaryOp(token *token.Token, operator op.Operator, left Expression, right Expression) *BinaryOp {
 	return &BinaryOp{token, operator, left, right, types.StringToType("undefined"), types.StringToType("undefined")}
 }
 
@@ -26,10 +29,10 @@ func (binOp *BinaryOp) String() string {
 	var out bytes.Buffer
 
 	out.WriteString(binOp.left.String())
-	if (binOp.operator == DOT) {
-		out.WriteString(OpToStr(binOp.operator))
+	if (binOp.operator == op.DOT) {
+		out.WriteString(op.OpToStr(binOp.operator))
 	} else {
-		out.WriteString(" " + OpToStr(binOp.operator) + " ")
+		out.WriteString(" " + op.OpToStr(binOp.operator) + " ")
 	}
 	out.WriteString(binOp.right.String())
 
@@ -37,8 +40,7 @@ func (binOp *BinaryOp) String() string {
 }
 
 func (b *BinaryOp) GetType(funcEntry *st.FuncEntry, tables *st.SymbolTables) types.Type {
-	fmt.Printf("BinOp getType (%s), op: %s\n", b.String(), OpToStr(b.operator))
-	if b.operator == DOT {
+	if b.operator == op.DOT {
 		var structEntry *st.StructEntry
 		var fieldEntry *st.VarEntry
 		var exists bool
@@ -48,7 +50,7 @@ func (b *BinaryOp) GetType(funcEntry *st.FuncEntry, tables *st.SymbolTables) typ
 				return fieldEntry.Ty
 			}
 		}
-	} else if isComparisonOp(b.operator) || isEqualityOp(b.operator) || isLogicalOp(b.operator) {
+	} else if op.IsComparisonOp(b.operator) || op.IsEqualityOp(b.operator) || op.IsLogicalOp(b.operator) {
 		return types.StringToType("bool")
 	} else {
 		return types.StringToType("int")
@@ -61,11 +63,11 @@ func (b *BinaryOp) TypeCheck(errors []*context.CompilerError, funcEntry *st.Func
 	binTy := types.StringToType("undefined") 
 	b.leftInfType, errors = b.left.TypeCheck(errors, funcEntry, tables)
 
-	if b.operator != DOT {
+	if b.operator != op.DOT {
 		b.rightInfType, errors = b.right.TypeCheck(errors, funcEntry, tables)
 	}
 
-	if b.operator == DOT {
+	if b.operator == op.DOT {
 		if structEntry, exists := tables.Structs.Contains(b.left.GetType(funcEntry, tables).String()); !exists {
 			msg := fmt.Sprintf("undefined type of %s located at (%d,%d)", b.leftInfType.String(), b.Line, b.Column)
 			semError := context.NewCompilerError(b.Line, b.Column, msg, context.SEMANTICS)
@@ -79,14 +81,14 @@ func (b *BinaryOp) TypeCheck(errors []*context.CompilerError, funcEntry *st.Func
 				binTy = fieldEntry.Ty
 			}
 		}
-	} else if isEqualityOp(b.operator) {
+	} else if op.IsEqualityOp(b.operator) {
 		if b.leftInfType != b.rightInfType {
 			if _, ok := b.leftInfType.(*types.PointerTy); ok && b.rightInfType.String() == "nil" {
 				binTy = types.StringToType("bool")
 			} else if _, ok := b.rightInfType.(*types.PointerTy); ok && b.leftInfType.String() == "nil" {
 				binTy = types.StringToType("bool")
 			} else {
-				msg := fmt.Sprintf("operands not of same type to apply %s operator, (%s) is of %s type and (%s) is of %s type", OpToStr(b.operator), b.left.String(), b.leftInfType, b.right.String(), b.rightInfType)
+				msg := fmt.Sprintf("operands not of same type to apply %s operator, (%s) is of %s type and (%s) is of %s type", op.OpToStr(b.operator), b.left.String(), b.leftInfType, b.right.String(), b.rightInfType)
 				semError := context.NewCompilerError(b.Line, b.Column, msg, context.SEMANTICS)
 				errors = append(errors, semError)
 			}
@@ -111,24 +113,24 @@ func (b *BinaryOp) TypeCheck(errors []*context.CompilerError, funcEntry *st.Func
 		// }		
 	} else {
 		if b.leftInfType != b.rightInfType {
-			msg := fmt.Sprintf("operands not of same type to apply %s operator, (%s) is of %s type and (%s) is of %s type", OpToStr(b.operator), b.left.String(), b.leftInfType, b.right.String(), b.rightInfType)
+			msg := fmt.Sprintf("operands not of same type to apply %s operator, (%s) is of %s type and (%s) is of %s type", op.OpToStr(b.operator), b.left.String(), b.leftInfType, b.right.String(), b.rightInfType)
 			semError := context.NewCompilerError(b.Line, b.Column, msg, context.SEMANTICS)
 			errors = append(errors, semError)
 		} else {
-			if isLogicalOp(b.operator) && b.leftInfType != types.StringToType("bool") {
-				msg := fmt.Sprintf("operands need to be of bool type to apply %s operator, are of %s type instead", OpToStr(b.operator), b.leftInfType)
+			if op.IsLogicalOp(b.operator) && b.leftInfType != types.StringToType("bool") {
+				msg := fmt.Sprintf("operands need to be of bool type to apply %s operator, are of %s type instead", op.OpToStr(b.operator), b.leftInfType)
 				semError := context.NewCompilerError(b.Line, b.Column, msg, context.SEMANTICS)
 				errors = append(errors, semError)
 			} else {
 				binTy = types.StringToType("bool")
 			} 
 			
-			if (isArithmeticOp(b.operator) || isComparisonOp(b.operator)) && b.leftInfType != types.StringToType("int") {
-				msg := fmt.Sprintf("operands need to be of int type to apply %s operator, are of %s type instead", OpToStr(b.operator), b.leftInfType)
+			if (op.IsArithmeticOp(b.operator) || op.IsComparisonOp(b.operator)) && b.leftInfType != types.StringToType("int") {
+				msg := fmt.Sprintf("operands need to be of int type to apply %s operator, are of %s type instead", op.OpToStr(b.operator), b.leftInfType)
 				semError := context.NewCompilerError(b.Line, b.Column, msg, context.SEMANTICS)
 				errors = append(errors, semError)
 			} else {
-				if isArithmeticOp(b.operator) {
+				if op.IsArithmeticOp(b.operator) {
 					binTy = types.StringToType("int")
 				} else {
 					binTy = types.StringToType("bool")
@@ -138,4 +140,24 @@ func (b *BinaryOp) TypeCheck(errors []*context.CompilerError, funcEntry *st.Func
 	}
 
 	return binTy, errors
+}
+
+func (b *BinaryOp) TranslateToLLVMStack(funcEntry *st.FuncEntry, tables *st.SymbolTables, currBlk *cfg.Block, llvmProgram *llvm.LLVMProgram) llvm.LLVMOperand {
+	var lOperand, rOperand llvm.LLVMOperand
+	var instn llvm.LLVMInstruction
+	lOperand = b.left.TranslateToLLVMStack(funcEntry, tables, currBlk, llvmProgram)
+
+	destEntry := st.NewVarEntry(b.String(), b.GetType(funcEntry, tables), st.LOCAL, b.Token)
+	funcEntry.Expressions.Insert(destEntry.Name, destEntry)
+	destRegister := llvm.NewLLVMRegister(llvmProgram.GenerateRegisterName(), destEntry)
+
+	if (b.operator == op.DOT) {
+		instn = llvm.NewGetElementInstn(destRegister, lOperand, b.right.String(), tables)
+	} else {
+		rOperand = b.right.TranslateToLLVMStack(funcEntry, tables, currBlk, llvmProgram)
+		instn = llvm.NewBinOpInstn(destRegister, b.operator, lOperand, rOperand, b.leftInfType)
+	}
+
+	currBlk.Instns = append(currBlk.Instns, instn)
+	return destRegister
 }

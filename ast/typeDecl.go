@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"fmt"
 	"golite/context"
+	"golite/llvm"
 	st "golite/symboltable"
 	"golite/token"
+	"golite/types"
 )
 
 type TypeDecl struct {
@@ -55,4 +57,16 @@ func (t *TypeDecl) BuildSymbolTable(errors []*context.CompilerError, structTable
 	structTable.Insert(t.id, structEntry)
 
 	return errors
+}
+
+func (t *TypeDecl) TranslateToLLVMStack(llvmProgram *llvm.LLVMProgram, structEntry *st.StructEntry, tables *st.SymbolTables) *llvm.LLVMProgram {
+	var tyList []types.Type
+
+	for _, fieldEntry := range(structEntry.Fields.GetTable()) {
+		tyList = append(tyList, fieldEntry.Ty)
+	}
+
+	llvmProgram.Structs = append(llvmProgram.Structs, llvm.NewStructDecl(t.id, tyList))
+
+	return llvmProgram
 }

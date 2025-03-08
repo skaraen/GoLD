@@ -3,11 +3,14 @@ package ast
 import (
 	"bytes"
 	"fmt"
+	"golite/cfg"
 	"golite/context"
+	"golite/llvm"
 	st "golite/symboltable"
 	"golite/token"
 	"golite/types"
 	"regexp"
+	"strings"
 )
 
 type PrintStmt struct {
@@ -60,4 +63,27 @@ func (ps *PrintStmt) TypeCheck(errors []*context.CompilerError, funcEntry *st.Fu
 	}
 
 	return errors
+}
+
+func (ps *PrintStmt) ReplaceForLLVMFormat() string {
+	modified := strings.ReplaceAll(ps.str, "%d", "%ld")
+	modified = strings.ReplaceAll(modified, "\n", "\\0A")
+	modified += "\\00"
+
+	return modified
+}
+
+func (ps *PrintStmt) TranslateToLLVMStack(currBlk *cfg.Block, exitBlk *cfg.Block, llvmProgram *llvm.LLVMProgram, funcEntry *st.FuncEntry, tables *st.SymbolTables) *cfg.Block {
+	modified := ps.ReplaceForLLVMFormat()
+	id := llvmProgram.AddFormatStr(modified)
+
+	var argList []llvm.LLVMOperand
+	for _, arg := range ps.args {
+		reg := arg.TranslateToLLVMStack(funcEntry, tables, currBlk, llvmProgram)
+		argList = append(argList, reg)
+	}
+
+	currBlk.Instns = append(currBlk.Instns, llvm.NewPrintInstn(id, argList))
+	
+	return currBlk
 }

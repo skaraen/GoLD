@@ -1,7 +1,9 @@
 package ast
 
 import (
+	"golite/cfg"
 	"golite/context"
+	"golite/llvm"
 	st "golite/symboltable"
 	"golite/token"
 	"golite/types"
@@ -26,4 +28,8 @@ func (nilLit *NilLit) GetType(funcEntry *st.FuncEntry, tables *st.SymbolTables) 
 
 func (nilLit *NilLit) TypeCheck(errors []*context.CompilerError, funcEntry *st.FuncEntry, tables *st.SymbolTables) (types.Type, []*context.CompilerError) {
 	return nilLit.GetType(funcEntry, tables), errors
+}
+
+func (nilLit *NilLit) TranslateToLLVMStack(funcEntry *st.FuncEntry, tables *st.SymbolTables, currBlk *cfg.Block, llvmProgram *llvm.LLVMProgram) llvm.LLVMOperand {
+	return nil
 }

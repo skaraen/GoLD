@@ -3,10 +3,11 @@ package sa
 import (
 	"golite/ast"
 	"golite/context"
+	"golite/llvm"
 	st "golite/symboltable"
 )
 
-func Execute(program *ast.Program) *st.SymbolTables {
+func Execute(program *ast.Program, sourceName string, targetTriple string) *llvm.LLVMProgram {
 	tables := st.NewSymbolTables()
 
 	errors := make([]*context.CompilerError, 0)
@@ -16,7 +17,7 @@ func Execute(program *ast.Program) *st.SymbolTables {
 		errors := make([]*context.CompilerError, 0)
 		errors = program.TypeCheck(errors, tables)
 		if !context.HasErrors(errors) {
-			return tables
+			return program.TranslateToLLVM(sourceName, targetTriple, tables)
 		}
 	}
 	return nil

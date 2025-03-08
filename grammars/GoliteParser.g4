@@ -30,7 +30,7 @@ assignment      : lValue ASSIGN expression SEMICOLON                            
 print           : PRINTF LPAREN STRING argsPrime* RPAREN SEMICOLON                                                                      ;
 conditional     : IF LPAREN expression RPAREN block (ELSE block)?                                                                       ;
 loop            : FOR LPAREN expression RPAREN block                                                                                    ;
-return          : RETURN expression SEMICOLON                                                                                           ;
+return          : RETURN (expression)? SEMICOLON                                                                                           ;
 invocation      : ID args SEMICOLON                                                                                                     ;                                                                  
 args            : LPAREN (expression argsPrime*)? RPAREN                                                                                ;
 argsPrime       : COMMA expr = expression                                                                                               ;

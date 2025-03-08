@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"golite/context"
+	"golite/llvm"
 	st "golite/symboltable"
 	"golite/token"
 	"golite/types"
@@ -85,4 +86,13 @@ func (f *Functions) TypeCheck(errors []*context.CompilerError, tables *st.Symbol
 	}
 	
 	return errors
+}
+
+func (f *Functions) TranslateToLLVMStack(llvmProgram *llvm.LLVMProgram, tables *st.SymbolTables) *llvm.LLVMProgram {
+	for _, fn := range (f.funcList) {
+		fnEntry, _ := tables.Funcs.Contains(fn.id)
+		llvmProgram = fn.TranslateToLLVMStack(llvmProgram, fnEntry, tables)
+	}
+
+	return llvmProgram
 }

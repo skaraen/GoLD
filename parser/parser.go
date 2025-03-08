@@ -5,6 +5,7 @@ import (
 	"golite/ast"
 	"golite/context"
 	"golite/lexer"
+	op "golite/operators"
 	"golite/token"
 	"golite/types"
 	"strconv"
@@ -130,7 +131,7 @@ func (parser *parserWrapper) ExitLValue(c *LValueContext) {
 	expr = ast.NewVariable(token, idCtx.GetText())
 
 	for _, lValuePrimeCtx := range (lValuePrimes) {
-		binOp := ast.NewBinaryOp(token, ast.StrToOp("."), expr, ast.NewVariable(token, lValuePrimeCtx.GetPid().GetText()))
+		binOp := ast.NewBinaryOp(token, op.StrToOp("."), expr, ast.NewVariable(token, lValuePrimeCtx.GetPid().GetText()))
 		expr = binOp
 	}
 
@@ -148,7 +149,7 @@ func (parser *parserWrapper) ExitSelectorTerm(c *SelectorTermContext) {
 	expr := parser.nodes[fKey].(ast.Expression)
 
 	for _, lValuePrimeCtx := range (lValuePrimes) {
-		binOp := ast.NewBinaryOp(token, ast.StrToOp("."), expr, ast.NewVariable(token, lValuePrimeCtx.GetPid().GetText()))
+		binOp := ast.NewBinaryOp(token, op.StrToOp("."), expr, ast.NewVariable(token, lValuePrimeCtx.GetPid().GetText()))
 		expr = binOp
 	}
 
@@ -157,19 +158,19 @@ func (parser *parserWrapper) ExitSelectorTerm(c *SelectorTermContext) {
 
 func (parser *parserWrapper) ExitUnaryTerm(c *UnaryTermContext) {
 	line, column, key := GetTokenInfo(c)
-	var op ast.Operator
+	var operator op.Operator
 
 	selectorCtx := c.SelectorTerm()
 	_, _, sKey := GetTokenInfo(selectorCtx)
 	selectorTerm := parser.nodes[sKey]
 
 	if opCtx := c.MINUS(); opCtx != nil {
-		op = ast.StrToOp(opCtx.GetText())
-		unOp := ast.NewUnaryOp(token.NewToken(line, column), op, selectorTerm.(ast.Expression))
+		operator = op.StrToOp(opCtx.GetText())
+		unOp := ast.NewUnaryOp(token.NewToken(line, column), operator, selectorTerm.(ast.Expression))
 		parser.nodes[key] = unOp
 	} else if opCtx := c.NOT(); opCtx != nil {
-		op = ast.StrToOp(opCtx.GetText())
-		unOp := ast.NewUnaryOp(token.NewToken(line, column), op, selectorTerm.(ast.Expression))
+		operator = op.StrToOp(opCtx.GetText())
+		unOp := ast.NewUnaryOp(token.NewToken(line, column), operator, selectorTerm.(ast.Expression))
 		parser.nodes[key] = unOp
 	} else {
 		parser.nodes[key] = selectorTerm
@@ -189,7 +190,7 @@ func (parser *parserWrapper) ExitTerm(c *TermContext) {
 	expr = parser.nodes[uKey].(ast.Expression)
 
 	for _, termPrimeCtx := range (termPrimes) {
-		op := ast.StrToOp(termPrimeCtx.GetOp().GetText())
+		op := op.StrToOp(termPrimeCtx.GetOp().GetText())
 		ut := termPrimeCtx.GetUt()
 		_, _, utKey := GetTokenInfo(ut)
 
@@ -213,7 +214,7 @@ func (parser *parserWrapper) ExitSimpleTerm(c *SimpleTermContext) {
 	expr = parser.nodes[tKey].(ast.Expression)
 
 	for _, sTermPrimeCtx := range (sTermPrimes) {
-		op := ast.StrToOp(sTermPrimeCtx.GetOp().GetText())
+		op := op.StrToOp(sTermPrimeCtx.GetOp().GetText())
 		t := sTermPrimeCtx.GetT()
 		_, _, tKey := GetTokenInfo(t)
 
@@ -237,7 +238,7 @@ func (parser *parserWrapper) ExitRelTerm(c *RelTermContext) {
 	expr = parser.nodes[sTermKey].(ast.Expression)
 
 	for _, rTermPrimeCtx := range (rTermPrimes) {
-		op := ast.StrToOp(rTermPrimeCtx.GetOp().GetText())
+		op := op.StrToOp(rTermPrimeCtx.GetOp().GetText())
 		st := rTermPrimeCtx.GetSt()
 		_, _, stKey := GetTokenInfo(st)
 
@@ -261,7 +262,7 @@ func (parser *parserWrapper) ExitEqualTerm(c *EqualTermContext) {
 	expr = parser.nodes[rTermKey].(ast.Expression)
 
 	for _, eTermPrimeCtx := range (eTermPrimes) {
-		op := ast.StrToOp(eTermPrimeCtx.GetOp().GetText())
+		op := op.StrToOp(eTermPrimeCtx.GetOp().GetText())
 		rt := eTermPrimeCtx.GetRt()
 		_, _, rtKey := GetTokenInfo(rt)
 
@@ -287,7 +288,7 @@ func (parser *parserWrapper) ExitBoolTerm(c *BoolTermContext) {
 	for _, bTermPrimeCtx := range (bTermPrimes) {
 		et := bTermPrimeCtx.GetEt()
 		_, _, etKey := GetTokenInfo(et)
-		binOp := ast.NewBinaryOp(token, ast.StrToOp("&&"), expr, parser.nodes[etKey].(ast.Expression))
+		binOp := ast.NewBinaryOp(token, op.StrToOp("&&"), expr, parser.nodes[etKey].(ast.Expression))
 		expr = binOp
 	}
 
@@ -310,7 +311,7 @@ func (parser *parserWrapper) ExitExpression(c *ExpressionContext) {
 		bt := exprPrimeCtx.GetBt()
 		_, _, btKey := GetTokenInfo(bt)
 
-		binOp := ast.NewBinaryOp(token, ast.StrToOp("||"), expr, parser.nodes[btKey].(ast.Expression))
+		binOp := ast.NewBinaryOp(token, op.StrToOp("||"), expr, parser.nodes[btKey].(ast.Expression))
 		expr = binOp
 	}
 
@@ -432,10 +433,13 @@ func (parser *parserWrapper) ExitReturn(c *ReturnContext) {
 	line, column, key := GetTokenInfo(c)
 	token := token.NewToken(line, column)
 
-	exprCtx := c.Expression()
-	_, _, exprKey := GetTokenInfo(exprCtx)
+	var retExp ast.Expression
+	if exprCtx := c.Expression(); exprCtx != nil {
+		_, _, exprKey := GetTokenInfo(exprCtx)
+		retExp = parser.nodes[exprKey].(ast.Expression)
+	}
 
-	parser.nodes[key] = ast.NewReturnStmt(token, parser.nodes[exprKey].(ast.Expression))
+	parser.nodes[key] = ast.NewReturnStmt(token, retExp)
 }
 
 func (parser *parserWrapper) ExitStatement(c *StatementContext) {

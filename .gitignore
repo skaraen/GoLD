@@ -2,3 +2,4 @@
 gold
 
 go.sum
+benchmarks/*

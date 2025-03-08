@@ -3,7 +3,9 @@ package ast
 import (
 	"bytes"
 	"fmt"
+	"golite/cfg"
 	"golite/context"
+	"golite/llvm"
 	st "golite/symboltable"
 	"golite/token"
 	"golite/types"
@@ -39,4 +41,19 @@ func (ls *LoopStmt) TypeCheck(errors []*context.CompilerError, funcEntry *st.Fun
 	errors = ls.loopBlock.TypeCheck(errors, funcEntry, tables)
 
 	return errors
+}
+
+func (ls *LoopStmt) TranslateToLLVMStack(currBlk *cfg.Block, exitBlk *cfg.Block, llvmProgram *llvm.LLVMProgram, funcEntry *st.FuncEntry, tables *st.SymbolTables) *cfg.Block {
+	labels := llvmProgram.GenerateLabelsBatch(funcEntry.Name, 3)
+	entryForBlk, bodyBlk, exitForBlk := cfg.NewForBlock(currBlk, exitBlk, labels[0], labels[1], labels[2])
+	condReg := ls.expr.TranslateToLLVMStack(funcEntry, tables, entryForBlk, llvmProgram).(*llvm.LLVMRegister)
+	
+	entryForBlk.Instns = append(entryForBlk.Instns, llvm.NewBranchInstn(condReg, bodyBlk, exitForBlk))
+	
+	currBlk = ls.loopBlock.TranslateToLLVMStack(bodyBlk, exitBlk, llvmProgram, funcEntry, tables)
+	currBlk.Instns = append(bodyBlk.Instns, llvm.NewJumpInstn(entryForBlk))
+	currBlk.Succs = append(currBlk.Succs, entryForBlk)
+	entryForBlk.Preds = append(entryForBlk.Preds, currBlk)
+
+	return exitForBlk
 }

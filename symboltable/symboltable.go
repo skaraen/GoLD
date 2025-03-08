@@ -17,9 +17,9 @@ const (
 
 type VarEntry struct {
 	*token.Token
-	Name  	string
-	Ty    	types.Type
-	Scope 	VarScope
+	Name  		string
+	Ty    		types.Type
+	Scope 		VarScope
 }
 
 func NewVarEntry(name string, ty types.Type, scope VarScope, token *token.Token) *VarEntry {
@@ -33,10 +33,11 @@ type FuncEntry struct {
 	Signature	[]types.Type
 	Parameters 	*SymbolTable[*VarEntry]
 	Variables  	*SymbolTable[*VarEntry]
+	Expressions *SymbolTable[*VarEntry]
 }
 
 func NewFuncEntry(name string, returnTy types.Type, token *token.Token) *FuncEntry {
-	return &FuncEntry{token, name, returnTy, make([]types.Type, 0), NewSymbolTable[*VarEntry](nil), NewSymbolTable[*VarEntry](nil)}
+	return &FuncEntry{token, name, returnTy, make([]types.Type, 0), NewSymbolTable[*VarEntry](nil), NewSymbolTable[*VarEntry](nil), NewSymbolTable[*VarEntry](nil)}
 }
 
 type StructEntry struct {
@@ -90,16 +91,18 @@ func (tables *SymbolTables) String() string {
 }
 
 type SymbolTable[T fmt.Stringer] struct {
-	parent *SymbolTable[T]
-	table  map[string]T
+	parent 	*SymbolTable[T]
+	table  	map[string]T
+	order	[]string 	
 }
 
 func NewSymbolTable[T fmt.Stringer](parent *SymbolTable[T]) *SymbolTable[T] {
-	return &SymbolTable[T]{parent, make(map[string]T)}
+	return &SymbolTable[T]{parent, make(map[string]T), make([]string, 0)}
 }
 
 func (st *SymbolTable[T]) Insert(id string, entry T) {
 	st.table[id] = entry
+	st.order = append(st.order, id)
 }
 
 func (st *SymbolTable[T]) Contains(id string) (T, bool) {
@@ -119,4 +122,17 @@ func (st *SymbolTable[T]) Contains(id string) (T, bool) {
 
 func (st *SymbolTable[T]) SetParent(parent *SymbolTable[T]) {
 	st.parent = parent
+}
+
+func (st *SymbolTable[T]) GetTable() map[string]T {
+	return st.table
+}
+
+func (st *SymbolTable[T]) GetIndex(target string) (int, bool) {
+	for idx, id := range st.order {
+		if id == target {
+			return idx, true
+		}
+	}
+	return -1, false
 }

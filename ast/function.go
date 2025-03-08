@@ -3,7 +3,9 @@ package ast
 import (
 	"bytes"
 	"fmt"
+	"golite/cfg"
 	"golite/context"
+	"golite/llvm"
 	st "golite/symboltable"
 	"golite/token"
 	"golite/types"
@@ -106,4 +108,37 @@ func (f *Function) TypeCheck(errors []*context.CompilerError, tables *st.SymbolT
 	}
 	
 	return errors
+}
+
+func (f *Function) TranslateToLLVMStack(llvmProgram *llvm.LLVMProgram, funcEntry *st.FuncEntry, tables *st.SymbolTables) *llvm.LLVMProgram {
+	labels := llvmProgram.GenerateLabelsBatch(f.id, 2)
+	entryBlk, exitBlk := cfg.NewBlock(labels[0], labels[1])
+	llvmProgram.Funcs[f.id] = entryBlk
+
+	currBlock := entryBlk
+
+	retReg := llvm.NewLLVMRegister("_ret_val", st.NewVarEntry("returnVal", funcEntry.RetTy, st.LOCAL, funcEntry.Token))
+	llvmProgram.RetRegisters[f.id] = retReg
+	currBlock.Instns = append(currBlock.Instns, llvm.NewAllocateInstn(retReg, funcEntry.RetTy))
+
+	for name, param := range funcEntry.Parameters.GetTable() {
+		paramReg := llvm.NewLLVMRegister(name, param)
+		llvmProgram.AddEntryRegister(param, paramReg)
+		localRegName := fmt.Sprintf("_P_%s", name)
+		localParamReg := llvm.NewLLVMRegister(localRegName, param)
+		currBlock.Instns = append(currBlock.Instns, llvm.NewAllocateInstn(localParamReg, param.Ty))
+		currBlock.Instns = append(currBlock.Instns, llvm.NewStoreInstn(localParamReg, localParamReg.GetType(), paramReg, paramReg.GetType()))
+	}
+
+	currBlock = f.declarations.(*Declarations).TranslateToLLVMStack(currBlock, exitBlk, llvmProgram, funcEntry, tables)
+
+	currBlock = f.statements.TranslateToLLVMStack(currBlock, exitBlk, llvmProgram, funcEntry, tables)
+	currBlock.Succs = append(currBlock.Succs, exitBlk)
+	currBlock.Instns = append(currBlock.Instns, llvm.NewJumpInstn(exitBlk))
+
+	tempReg := llvm.NewLLVMRegister(llvmProgram.GenerateRegisterName(), st.NewVarEntry("tempRet", funcEntry.RetTy, st.LOCAL, funcEntry.Token))
+	exitBlk.Instns = append(exitBlk.Instns, llvm.NewLoadInstn(tempReg, tempReg.GetType(), retReg, retReg.GetType()))
+	exitBlk.Instns = append(exitBlk.Instns, llvm.NewReturnInstn(tempReg))
+
+	return llvmProgram
 }

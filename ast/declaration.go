@@ -3,7 +3,9 @@ package ast
 import (
 	"bytes"
 	"fmt"
+	"golite/cfg"
 	"golite/context"
+	"golite/llvm"
 	st "golite/symboltable"
 	"golite/token"
 	"golite/types"
@@ -58,4 +60,19 @@ func (d *Declaration) BuildSymbolTable(errors []*context.CompilerError, tables *
 	}
 
 	return errors
+}
+
+func (d *Declaration) TranslateToLLVMStack(currBlk *cfg.Block, exitBlk *cfg.Block, llvmProgram *llvm.LLVMProgram, funcEntry *st.FuncEntry, tables *st.SymbolTables) *cfg.Block {
+	idsList := d.ids.(*Ids).idsList
+
+	for _, id := range (idsList) {
+		varEntry, _ := funcEntry.Variables.Contains(id)
+		idRegister := llvm.NewLLVMRegister(varEntry.Name, varEntry)
+		llvmProgram.AddEntryRegister(varEntry, idRegister)
+	
+		allocateInstn := llvm.NewAllocateInstn(idRegister, d.declType)
+		currBlk.Instns = append(currBlk.Instns, allocateInstn)
+	}
+	
+	return currBlk
 }

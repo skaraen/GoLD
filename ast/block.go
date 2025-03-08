@@ -2,7 +2,9 @@ package ast
 
 import (
 	"bytes"
+	"golite/cfg"
 	"golite/context"
+	"golite/llvm"
 	st "golite/symboltable"
 	"golite/token"
 )
@@ -28,4 +30,10 @@ func (b *Block) TypeCheck(errors []*context.CompilerError, funcEntry *st.FuncEnt
 	errors = b.statements.TypeCheck(errors, funcEntry, tables)
 
 	return errors
+}
+
+func (b *Block) TranslateToLLVMStack(currBlk *cfg.Block, exitBlk *cfg.Block, llvmProgram *llvm.LLVMProgram, funcEntry *st.FuncEntry, tables *st.SymbolTables) *cfg.Block {
+	currBlk = b.statements.TranslateToLLVMStack(currBlk, exitBlk, llvmProgram, funcEntry, tables)
+
+	return currBlk
 }

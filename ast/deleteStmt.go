@@ -3,7 +3,9 @@ package ast
 import (
 	"bytes"
 	"fmt"
+	"golite/cfg"
 	"golite/context"
+	"golite/llvm"
 	st "golite/symboltable"
 	"golite/token"
 	"golite/types"
@@ -36,4 +38,12 @@ func (ds *DeleteStmt) TypeCheck(errors []*context.CompilerError, funcEntry *st.F
 	}
 
 	return errors
+}
+
+func (ds *DeleteStmt) TranslateToLLVMStack(currBlk *cfg.Block, exitBlk *cfg.Block, llvmProgram *llvm.LLVMProgram, funcEntry *st.FuncEntry, tables *st.SymbolTables) *cfg.Block {
+	temp1 := ds.expr.TranslateToLLVMStack(funcEntry, tables, currBlk, llvmProgram).(*llvm.LLVMRegister)
+	temp2 := llvm.NewLLVMRegister(llvmProgram.GenerateRegisterName(), nil)
+
+	currBlk.Instns = append(currBlk.Instns, llvm.NewDeleteInstn(temp1, temp2))
+	return currBlk
 }

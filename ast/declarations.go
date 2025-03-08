@@ -2,8 +2,9 @@ package ast
 
 import (
 	"bytes"
-	"fmt"
+	"golite/cfg"
 	"golite/context"
+	"golite/llvm"
 	st "golite/symboltable"
 	"golite/token"
 )
@@ -21,9 +22,6 @@ func (d *Declarations) String() string {
 	var out bytes.Buffer
 
 	for _, declaration := range (d.declrList) {
-		if (declaration == nil) {
-			fmt.Println("Nil")
-		}
 		out.WriteString(declaration.String() + "\n")
 	}
 
@@ -38,6 +36,14 @@ func (d *Declarations) BuildSymbolTable(errors []*context.CompilerError, tables 
 	return errors
 }
 
-func (d *Declarations) TypeCheck(errors []*context.CompilerError, funcEntry *st.FuncEntry, tables *st.SymbolTables) []*context.CompilerError {
+func (d *Declarations) TypeCheck(errors []*context.CompilerError, structEntry *st.FuncEntry, tables *st.SymbolTables) []*context.CompilerError {
 	return errors
+}
+
+func (d *Declarations) TranslateToLLVMStack(currBlk *cfg.Block, exitBlk *cfg.Block, llvmProgram *llvm.LLVMProgram, funcEntry *st.FuncEntry, tables *st.SymbolTables) *cfg.Block {
+	for _, declr := range (d.declrList) {
+		currBlk = declr.TranslateToLLVMStack(currBlk, exitBlk, llvmProgram, funcEntry, tables)
+	}
+
+	return currBlk
 }

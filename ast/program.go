@@ -3,6 +3,7 @@ package ast
 import (
 	"bytes"
 	"golite/context"
+	"golite/llvm"
 	st "golite/symboltable"
 	"golite/token"
 )
@@ -40,4 +41,23 @@ func (p *Program) TypeCheck(errors []*context.CompilerError, tables *st.SymbolTa
 	errors = p.functions.TypeCheck(errors, tables)
 	
 	return errors
+}
+
+func (p *Program) TranslateToLLVM(srcName string, targetTriple string, tables *st.SymbolTables) *llvm.LLVMProgram {
+	llvmProgram := llvm.NewLLVMProgram(srcName, targetTriple, tables)
+
+	llvmProgram = p.userTypes.TranslateToLLVMStack(llvmProgram, tables)
+
+	declrList := p.declarations.declrList
+	for _, declr := range (declrList) {
+		idsList := declr.ids.(*Ids).idsList
+
+		for _, id := range (idsList) {
+			llvmProgram.Globals = append(llvmProgram.Globals, llvm.NewGlobalDecl(id, declr.declType))
+		}
+	}
+
+	llvmProgram = p.functions.TranslateToLLVMStack(llvmProgram, tables)
+
+	return llvmProgram
 }

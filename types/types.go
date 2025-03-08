@@ -86,3 +86,29 @@ func AddNewUserType(id string) {
 	}
 	userTypes[id] = &PointerTy{id: id}
 }
+
+func TypesToLLVMTypes(ty Type) string {
+	str := ""
+
+	if ty == IntTySig || ty == BoolTySig {
+		str = "i64"
+	} else if pTy, ok := ty.(*PointerTy); ok {
+		str = fmt.Sprintf("%%struct.%s*", pTy.id)
+	} else if ty == NilTySig {
+		str = "void"
+	}
+
+	return str
+}
+
+func GetLLVMDefaultValue(ty Type) string {
+	str := ""
+
+	if ty == IntTySig || ty == BoolTySig {
+		str = "0"
+	} else if _, ok := ty.(*PointerTy); ok {
+		str = "null"
+	}
+
+	return str
+}

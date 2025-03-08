@@ -2,7 +2,9 @@ package ast
 
 import (
 	"fmt"
+	"golite/cfg"
 	"golite/context"
+	"golite/llvm"
 	st "golite/symboltable"
 	"golite/token"
 	"golite/types"
@@ -39,4 +41,14 @@ func (v *Variable) TypeCheck(errors []*context.CompilerError, funcEntry *st.Func
 	}
 
 	return v.GetType(funcEntry, tables), errors
+}
+
+func (v *Variable) TranslateToLLVMStack(funcEntry *st.FuncEntry, tables *st.SymbolTables, currBlk *cfg.Block, llvmProgram *llvm.LLVMProgram) llvm.LLVMOperand {
+	varEntry,_ := funcEntry.Variables.Contains(v.identifier)
+	llvmOperand := llvm.NewLLVMRegister(llvmProgram.GenerateRegisterName(), varEntry)
+	varRegister := llvmProgram.EntryRegMap[varEntry]
+	loadInstn := llvm.NewLoadInstn(llvmOperand, v.iType, varRegister, v.iType)
+	currBlk.Instns = append(currBlk.Instns, loadInstn)
+
+	return llvmOperand
 }

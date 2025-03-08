@@ -3,7 +3,9 @@ package ast
 import (
 	"bytes"
 	"fmt"
+	"golite/cfg"
 	"golite/context"
+	"golite/llvm"
 	st "golite/symboltable"
 	"golite/token"
 	"golite/types"
@@ -48,4 +50,25 @@ func (cs *ConditionalStmt) TypeCheck(errors []*context.CompilerError, funcEntry 
 	}
 
 	return errors
+}
+
+func (cs *ConditionalStmt) TranslateToLLVMStack(currBlk *cfg.Block, exitBlk *cfg.Block, llvmProgram *llvm.LLVMProgram, funcEntry *st.FuncEntry, tables *st.SymbolTables) *cfg.Block {
+	labels := llvmProgram.GenerateLabelsBatch(funcEntry.Name, 3)
+	trueBlk, falseBlk, exitIfBlk := cfg.NewIfBlock(currBlk, exitBlk, labels[0], labels[1], labels[2])
+	condReg := cs.expr.TranslateToLLVMStack(funcEntry, tables, currBlk, llvmProgram).(*llvm.LLVMRegister)
+	
+	currBlk.Instns = append(currBlk.Instns, llvm.NewBranchInstn(condReg, trueBlk, falseBlk))
+	
+	currTrueBlk := cs.ifBlock.TranslateToLLVMStack(trueBlk, exitBlk, llvmProgram, funcEntry, tables)
+	currTrueBlk.Instns = append(currTrueBlk.Instns, llvm.NewJumpInstn(exitIfBlk))
+	currTrueBlk.Succs = append(currTrueBlk.Succs, exitIfBlk)
+	
+	currFalseBlk := falseBlk
+	if cs.elseBlock != nil {
+		currFalseBlk = cs.elseBlock.TranslateToLLVMStack(falseBlk, exitBlk, llvmProgram, funcEntry, tables)
+	}
+	currFalseBlk.Instns = append(currFalseBlk.Instns, llvm.NewJumpInstn(exitIfBlk))
+	currFalseBlk.Succs = append(currFalseBlk.Succs, exitIfBlk)
+
+	return exitIfBlk
 }

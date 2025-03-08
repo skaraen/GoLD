@@ -3,6 +3,7 @@ package ast
 import (
 	"bytes"
 	"golite/context"
+	"golite/llvm"
 	st "golite/symboltable"
 	"golite/token"
 )
@@ -32,4 +33,13 @@ func (u *UserTypes) BuildSymbolTable(errors []*context.CompilerError, table *st.
 	}
 
 	return errors
+}
+
+func (u *UserTypes) TranslateToLLVMStack(llvmProgram *llvm.LLVMProgram, tables *st.SymbolTables) *llvm.LLVMProgram {
+	for _, typeDecl := range (u.typesDeclList) {
+		structEntry, _ := tables.Structs.Contains(typeDecl.id) 
+		llvmProgram = typeDecl.TranslateToLLVMStack(llvmProgram, structEntry, tables)
+	}
+
+	return llvmProgram
 }
