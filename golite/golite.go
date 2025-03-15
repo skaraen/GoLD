@@ -15,6 +15,7 @@ func main() {
 	lFlag := flag.Bool("l", false, "Lexer Mode")
 	astFlag := flag.Bool("ast", false, "Print AST")
 	llvmIRFlag := flag.String("llvm-ir", "", "Specify LLVM IR phase: 'stack' or 'reg'")
+	assemblyFlag := flag.Bool("S", false, "Assembly code file")
 	flag.Parse()
 
 	inputSourcePath := flag.Arg(0)
@@ -52,5 +53,7 @@ func main() {
 
 	llvmProgram.LScanRegAlloc()
 	armProgram := llvmProgram.TranslateToAssembly()
-	os.WriteFile(armMachineFile, []byte(armProgram.String()), 0644)
+	if *assemblyFlag {
+		os.WriteFile(armMachineFile, []byte(armProgram.String()), 0644)
+	} 
 }
