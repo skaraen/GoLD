@@ -53,7 +53,7 @@ func StrToOp(op string) Operator {
 	case "!":
 		return NOT
 	}
-	panic("Could not find operator")
+	panic("Could not find operator " + op)
 }
 
 func OpToStr(op Operator) string {
@@ -147,7 +147,39 @@ func OpToLLVM(op Operator) string {
 	case OR:
 		return "or"
 	case NOT:
-		return "!"
+		return "xor"
+	}
+	panic("Could not determine operator")
+}
+
+func OpToAssembly(op Operator) string {
+	switch op {
+	case PLUS:
+		return "add"
+	case MINUS:
+		return "sub"
+	case ASTERIX:
+		return "mul"
+	case FSLASH:
+		return "sdiv"
+	case GT:
+		return "b.gt"
+	case GTE:
+		return "b.ge"
+	case LT:
+		return "b.lt"
+	case LTE:
+		return "b.le"
+	case EQUALS:
+		return "b.eq"
+	case NEQUALS:
+		return "b.ne"
+	case AND:
+		return "and"
+	case OR:
+		return "orr"
+	case NOT:
+		return "mvn"
 	}
 	panic("Could not determine operator")
 }

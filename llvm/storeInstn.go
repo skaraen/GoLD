@@ -3,7 +3,9 @@ package llvm
 import (
 	"bytes"
 	"fmt"
+	"golite/arm"
 	"golite/cfg"
+	st "golite/symboltable"
 	"golite/types"
 )
 
@@ -37,6 +39,17 @@ func (s *StoreInstn) GetDef() *LLVMRegister {
 	return s.dest
 }
 
-func (l *StoreInstn) Mem2Reg(defs map[string]LLVMOperand, predLbl string, currBlock *cfg.Block) bool {
-	return false
+func (s *StoreInstn) Mem2Reg(defs map[string]LLVMOperand, predLbl string, currBlock *cfg.Block) bool {
+	if defEntry := defs[s.dest.id]; defEntry != nil {
+		defs[s.dest.id] = s.val
+		return false
+	} else {
+		return true
+	}
+}
+
+func (s *StoreInstn) TranslateToAssembly(tables *st.SymbolTables) []arm.Instruction {
+	var armInstns []arm.Instruction
+
+	return armInstns
 }

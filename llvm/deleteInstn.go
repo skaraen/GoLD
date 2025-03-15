@@ -1,37 +1,31 @@
 package llvm
 
 import (
-	"bytes"
 	"fmt"
+	"golite/arm"
 	"golite/cfg"
+	st "golite/symboltable"
 	"golite/types"
 )
 
 type DeleteInstn struct {
-	temp1			*LLVMRegister
-	temp2			*LLVMRegister
+	op			*LLVMRegister
 }
 
-func NewDeleteInstn(temp1 *LLVMRegister, temp2 *LLVMRegister) *DeleteInstn {
-	return &DeleteInstn{temp1, temp2}
+func NewDeleteInstn(op *LLVMRegister) *DeleteInstn {
+	return &DeleteInstn{op}
 }
 
 func (d *DeleteInstn) String() string {
-	var out bytes.Buffer
+	// bitcastStr := fmt.Sprintf("%s = bitcast %s %s to i8*", d.temp2.String(), types.TypesToLLVMTypes(d.temp1.entry.Ty), d.temp1.String())
+	deleteStr := fmt.Sprintf("call void @free(%s %s)", types.TypesToLLVMTypes(d.op.GetType()), d.op.String())
 
-	bitcastStr := fmt.Sprintf("%s = bitcast %s %s to i8*", d.temp2.String(), types.TypesToLLVMTypes(d.temp1.entry.Ty), d.temp1.String())
-	deleteStr := fmt.Sprintf("call void @free(i8* %s)", d.temp2.String())
-
-	out.WriteString(bitcastStr + "\n")
-	out.WriteString(deleteStr)
-
-	return out.String()
+	return deleteStr
 }
 
 func (d *DeleteInstn) GetUses() []LLVMOperand {
 	var regs []LLVMOperand
-	regs = append(regs, d.temp1)
-	regs = append(regs, d.temp2)
+	regs = append(regs, d.op)
 	return regs
 }
 
@@ -40,5 +34,15 @@ func (d *DeleteInstn) GetDef() *LLVMRegister {
 }
 
 func (d *DeleteInstn) Mem2Reg(defs map[string]LLVMOperand, predLbl string, currBlock *cfg.Block) bool {
-	return false
+	if defEntry := defs[d.op.GetName()]; defEntry != nil {
+		d.op = defEntry.(*LLVMRegister)
+	}
+
+	return true
+}
+
+func (d *DeleteInstn) TranslateToAssembly(tables *st.SymbolTables) []arm.Instruction {
+	var armInstns []arm.Instruction
+
+	return armInstns
 }

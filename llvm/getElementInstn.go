@@ -2,6 +2,7 @@ package llvm
 
 import (
 	"fmt"
+	"golite/arm"
 	"golite/cfg"
 	st "golite/symboltable"
 	"golite/types"
@@ -40,5 +41,15 @@ func (g *GetElementInstn) GetDef() *LLVMRegister {
 }
 
 func (g *GetElementInstn) Mem2Reg(defs map[string]LLVMOperand, predLbl string, currBlock *cfg.Block) bool {
-	return false
+	if defEntry := defs[g.operand.GetName()]; defEntry != nil {
+		g.operand = defEntry
+	}
+
+	return true
+}
+
+func (g *GetElementInstn) TranslateToAssembly(tables *st.SymbolTables) []arm.Instruction {
+	var armInstns []arm.Instruction
+
+	return armInstns
 }

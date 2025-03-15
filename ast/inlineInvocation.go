@@ -38,17 +38,28 @@ func (inv *InlineInvocation) GetType(funcEntry *st.FuncEntry, tables *st.SymbolT
 }
 
 func (inv *InlineInvocation) TypeCheck(errors []*context.CompilerError, funcEntry *st.FuncEntry, tables *st.SymbolTables) (types.Type, []*context.CompilerError) {
-	if _, exists := tables.Funcs.Contains(inv.function); !exists {
+	if invEntry, exists := tables.Funcs.Contains(inv.function); !exists {
 		msg := fmt.Sprintf("method (%s) trying to be invoked does not exist", inv.function)
 		semError := context.NewCompilerError(inv.Line, inv.Column, msg, context.SEMANTICS)
 		errors = append(errors, semError)
+	} else {
+		_, errors = inv.args.TypeCheck(errors, funcEntry, tables)
+
+		if len(invEntry.Signature) != len(inv.args.(*Args).argsList) {
+			msg := fmt.Sprintf("function %s need %d arguments, found %d instead", invEntry.Name, len(invEntry.Signature), len(inv.args.(*Args).argsList))
+			semError := context.NewCompilerError(inv.Line, inv.Column, msg, context.SEMANTICS)
+			errors = append(errors, semError)
+		} else {
+			for i, arg := range (inv.args.(*Args).argsList) {
+				argTy := arg.GetType(funcEntry, tables)
+				if invEntry.Signature[i] != argTy {
+					msg := fmt.Sprintf("need argument of type %s, argument (%s) is of type %s", invEntry.Signature[i].String(), arg.String(), argTy.String())
+					semError := context.NewCompilerError(inv.Line, inv.Column, msg, context.SEMANTICS)
+					errors = append(errors, semError)
+				}
+			}
+		}
 	}
-
-	// for _, arg := range (inv.args.(*Args).argsList) {
-	// 	argTy := arg.GetType(funcEntry, tables)
-
-	// 	// Match function signatures
-	// }
 
 	return inv.GetType(funcEntry, tables), errors
 }
@@ -56,15 +67,25 @@ func (inv *InlineInvocation) TypeCheck(errors []*context.CompilerError, funcEntr
 func (inv *InlineInvocation) TranslateToLLVMStack(funcEntry *st.FuncEntry, tables *st.SymbolTables, currBlk *cfg.Block, llvmProgram *llvm.LLVMProgram) llvm.LLVMOperand {
 	invEntry, _ := tables.Funcs.Contains(inv.function)
 
-	var regList []llvm.LLVMOperand
+	var opList []llvm.LLVMOperand
 	for _, arg := range inv.args.(*Args).argsList {
-		reg := arg.TranslateToLLVMStack(funcEntry, tables, currBlk, llvmProgram)
-		regList = append(regList, reg)
+		op := arg.TranslateToLLVMStack(funcEntry, tables, currBlk, llvmProgram)
+		opList = append(opList, op)
 	}
 
-	dest := llvm.NewLLVMRegister(llvmProgram.GenerateRegisterName(), st.NewVarEntry(inv.String(), inv.GetType(funcEntry, tables), st.LOCAL, inv.Token))
-	invInstn := llvm.NewInvInstn(invEntry, dest, regList)
-	currBlk.Instns = append(currBlk.Instns, invInstn)
+	dest := llvm.NewLLVMRegister(llvmProgram.GenerateRegisterName(), st.NewVarEntry(inv.String(), inv.GetType(funcEntry, tables), st.LOCAL, inv.Token), false)
+	invInstn := llvm.NewInvInstn(invEntry, dest, opList)
+	// currBlk.Instns = append(currBlk.Instns, invInstn)
+	currBlk.AddInstn(invInstn)
+
+	if invEntry.RetTy == types.BoolTySig {
+		newDest := llvm.NewLLVMRegister(llvmProgram.GenerateRegisterName(), st.NewVarEntry(inv.String(), types.Int1TySig, st.LOCAL, inv.Token), false)
+		truncInstn := llvm.NewTruncInstn(newDest, newDest.GetType(), dest, dest.GetType())
+		// currBlk.Instns = append(currBlk.Instns, truncInstn)
+		currBlk.AddInstn(truncInstn)
+
+		return newDest
+	}
 	
 	return dest
 }

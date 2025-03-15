@@ -41,12 +41,20 @@ func (rs *ReadStmt) TypeCheck(errors []*context.CompilerError, funcEntry *st.Fun
 }
 
 func (rs *ReadStmt) TranslateToLLVMStack(currBlk *cfg.Block, exitBlk *cfg.Block, llvmProgram *llvm.LLVMProgram, funcEntry *st.FuncEntry, tables *st.SymbolTables) *cfg.Block {
-	valEntry, exists := funcEntry.Variables.Contains(rs.lValue.String())
+	valEntry, _ := funcEntry.Variables.Contains(rs.lValue.String())
 
-	if !exists {
-		valEntry = st.NewVarEntry("", types.IntTySig, st.GLOBAL, rs.Token)
-	}
-	currBlk.Instns = append(currBlk.Instns, llvm.NewReadInstn(valEntry))
+	tempRegName := llvmProgram.GenerateRegisterName()
+	tempReg := llvm.NewLLVMRegister(tempRegName, st.NewVarEntry(tempRegName, valEntry.Ty, st.LOCAL, rs.Token), false)
+	destReg := llvmProgram.EntryRegMap[valEntry]
+	// if !exists {
+	// 	valEntry = st.NewVarEntry("", types.IntTySig, st.GLOBAL, rs.Token)
+	// } 
+	
+
+	// currBlk.Instns = append(currBlk.Instns, llvm.NewReadInstn(valEntry))
+	currBlk.AddInstn(llvm.NewReadInstn(llvmProgram.ReadScratch))
+	currBlk.AddInstn(llvm.NewLoadInstn(tempReg, tempReg.GetType(), llvmProgram.ReadScratch, llvmProgram.ReadScratch.GetType()))
+	currBlk.AddInstn(llvm.NewStoreInstn(destReg, destReg.GetType(), tempReg, tempReg.GetType()))
 	
 	return currBlk
 }

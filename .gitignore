@@ -2,4 +2,4 @@
 gold
 
 go.sum
-benchmarks/*
+*.ll

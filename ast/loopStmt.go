@@ -46,14 +46,22 @@ func (ls *LoopStmt) TypeCheck(errors []*context.CompilerError, funcEntry *st.Fun
 func (ls *LoopStmt) TranslateToLLVMStack(currBlk *cfg.Block, exitBlk *cfg.Block, llvmProgram *llvm.LLVMProgram, funcEntry *st.FuncEntry, tables *st.SymbolTables) *cfg.Block {
 	labels := llvmProgram.GenerateLabelsBatch(funcEntry.Name, 3)
 	entryForBlk, bodyBlk, exitForBlk := cfg.NewForBlock(currBlk, exitBlk, labels[0], labels[1], labels[2])
+
+	// currBlk.Instns = append(currBlk.Instns, llvm.NewJumpInstn(entryForBlk))
+	currBlk.AddInstn(llvm.NewJumpInstn(entryForBlk))
 	condReg := ls.expr.TranslateToLLVMStack(funcEntry, tables, entryForBlk, llvmProgram).(*llvm.LLVMRegister)
 	
-	entryForBlk.Instns = append(entryForBlk.Instns, llvm.NewBranchInstn(condReg, bodyBlk, exitForBlk))
+	// entryForBlk.Instns = append(entryForBlk.Instns, llvm.NewBranchInstn(condReg, bodyBlk, exitForBlk))
+	entryForBlk.AddInstn(llvm.NewBranchInstn(condReg, bodyBlk, exitForBlk))
 	
-	currBlk = ls.loopBlock.TranslateToLLVMStack(bodyBlk, exitBlk, llvmProgram, funcEntry, tables)
-	currBlk.Instns = append(bodyBlk.Instns, llvm.NewJumpInstn(entryForBlk))
-	currBlk.Succs = append(currBlk.Succs, entryForBlk)
-	entryForBlk.Preds = append(entryForBlk.Preds, currBlk)
+	currBodyBlk := ls.loopBlock.TranslateToLLVMStack(bodyBlk, exitBlk, llvmProgram, funcEntry, tables)
+	// currBodyBlk.Instns = append(currBodyBlk.Instns, llvm.NewJumpInstn(entryForBlk))
+	currBodyBlk.AddInstn(llvm.NewJumpInstn(entryForBlk))
+
+	if !currBodyBlk.IsReturning {
+		currBodyBlk.AddSucc(entryForBlk)
+		entryForBlk.AddPred(currBodyBlk)
+	}
 
 	return exitForBlk
 }

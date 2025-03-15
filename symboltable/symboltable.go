@@ -136,3 +136,14 @@ func (st *SymbolTable[T]) GetIndex(target string) (int, bool) {
 	}
 	return -1, false
 }
+
+func (st *SymbolTable[T]) GetOrderedEntries() []T {
+	var orderedList []T
+
+	for _, id := range st.order {
+		entry := st.table[id]
+		orderedList = append(orderedList, entry)
+	}
+
+	return orderedList
+}

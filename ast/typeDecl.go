@@ -62,7 +62,7 @@ func (t *TypeDecl) BuildSymbolTable(errors []*context.CompilerError, structTable
 func (t *TypeDecl) TranslateToLLVMStack(llvmProgram *llvm.LLVMProgram, structEntry *st.StructEntry, tables *st.SymbolTables) *llvm.LLVMProgram {
 	var tyList []types.Type
 
-	for _, fieldEntry := range(structEntry.Fields.GetTable()) {
+	for _, fieldEntry := range structEntry.Fields.GetOrderedEntries() {
 		tyList = append(tyList, fieldEntry.Ty)
 	}
 

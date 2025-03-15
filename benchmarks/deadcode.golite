@@ -1,0 +1,14 @@
+func foo(x int, y int) int {
+    var sum int;
+    sum = 1 + 5;
+    return sum;
+    sum = 6 + 7;
+    printf("Sum is positive\n");
+}
+
+func main() {
+    var a, b int;
+    scan a;
+    scan b;
+    foo(6, 8);
+}

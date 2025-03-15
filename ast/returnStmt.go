@@ -60,7 +60,18 @@ func (rs *ReturnStmt) TranslateToLLVMStack(currBlk *cfg.Block, exitBlk *cfg.Bloc
 	}
 
 	retReg := llvmProgram.RetRegisters[funcEntry.Name]
-	currBlk.Instns = append(currBlk.Instns, llvm.NewStoreInstn(retReg, retReg.GetType(), temp1, temp1Ty))
-	currBlk.Instns = append(currBlk.Instns, llvm.NewJumpInstn(exitBlk))
+	// currBlk.Instns = append(currBlk.Instns, llvm.NewStoreInstn(retReg, retReg.GetType(), temp1, temp1Ty))
+	currBlk.AddInstn(llvm.NewStoreInstn(retReg, retReg.GetType(), temp1, temp1Ty))
+	// currBlk.Instns = append(currBlk.Instns, llvm.NewJumpInstn(exitBlk))
+	currBlk.AddInstn(llvm.NewJumpInstn(exitBlk))
+
+	currBlk.IsReturning = true
+	for _, succBlk := range currBlk.Succs {
+		succBlk.RemovePred(currBlk)
+	}
+	currBlk.ClearSuccs()
+	currBlk.AddSucc(exitBlk)
+	exitBlk.AddPred(currBlk)
+
 	return currBlk
 }

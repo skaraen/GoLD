@@ -3,7 +3,9 @@ package llvm
 import (
 	"bytes"
 	"fmt"
+	"golite/arm"
 	"golite/cfg"
+	st "golite/symboltable"
 	"golite/types"
 	"strings"
 )
@@ -42,5 +44,11 @@ func (s *StructDecl) GetDef() *LLVMRegister {
 }
 
 func (s *StructDecl) Mem2Reg(defs map[string]LLVMOperand, predLbl string, currBlock *cfg.Block) bool {
-	return false
+	return true
+}
+
+func (s *StructDecl) TranslateToAssembly(tables *st.SymbolTables) []arm.Instruction {
+	var armInstns []arm.Instruction
+
+	return armInstns
 }

@@ -6,6 +6,7 @@ import (
 	"golite/llvm"
 	st "golite/symboltable"
 	"golite/token"
+	"golite/types"
 )
 
 type Program struct {
@@ -53,9 +54,13 @@ func (p *Program) TranslateToLLVM(srcName string, targetTriple string, tables *s
 		idsList := declr.ids.(*Ids).idsList
 
 		for _, id := range (idsList) {
+			varEntry,_ := tables.Globals.Contains(id) 
+			reg := llvm.NewLLVMRegister(varEntry.Name, varEntry, false)
+			llvmProgram.AddEntryRegister(varEntry, reg)
 			llvmProgram.Globals = append(llvmProgram.Globals, llvm.NewGlobalDecl(id, declr.declType))
 		}
 	}
+	llvmProgram.Globals = append(llvmProgram.Globals, llvm.NewGlobalDecl(".read_scratch", types.IntTySig))
 
 	llvmProgram = p.functions.TranslateToLLVMStack(llvmProgram, tables)
 

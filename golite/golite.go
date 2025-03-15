@@ -14,13 +14,15 @@ import (
 func main() {
 	lFlag := flag.Bool("l", false, "Lexer Mode")
 	astFlag := flag.Bool("ast", false, "Print AST")
-	stackFlag := flag.Bool("llvm-stack", false, "LLVM Stack")
+	llvmIRFlag := flag.String("llvm-ir", "", "Specify LLVM IR phase: 'stack' or 'reg'")
 	flag.Parse()
 
 	inputSourcePath := flag.Arg(0)
 	fileNameWithExt := filepath.Base(inputSourcePath)
 	sourceName := strings.TrimSuffix(fileNameWithExt, filepath.Ext(fileNameWithExt))
-	llvmFile := sourceName + ".ll"
+	llvmStackFile := sourceName + "_stack.ll"
+	llvmRegFile := sourceName + "_reg.ll"
+	armMachineFile := sourceName + "_arm.s"
 	targetTriple := "x86_64-linux-gnu"
 
 	lexer := lexer.NewLexer(inputSourcePath)
@@ -37,9 +39,18 @@ func main() {
 	}
 
 	llvmProgram := sa.Execute(program, sourceName, targetTriple)
-	if (*stackFlag) {
-		os.WriteFile(llvmFile, []byte(llvmProgram.String()), 0644)
+	if *llvmIRFlag == "stack" {
+		os.WriteFile(llvmStackFile, []byte(llvmProgram.String()), 0644)
+		return
 	}
 
-	fmt.Print(llvmProgram)
+	llvmProgram.TranslateFromStackToReg()
+	if *llvmIRFlag == "reg" {
+		os.WriteFile(llvmRegFile, []byte(llvmProgram.String()), 0644)
+		return
+	}
+
+	llvmProgram.LScanRegAlloc()
+	armProgram := llvmProgram.TranslateToAssembly()
+	os.WriteFile(armMachineFile, []byte(armProgram.String()), 0644)
 }

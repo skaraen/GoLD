@@ -117,28 +117,51 @@ func (f *Function) TranslateToLLVMStack(llvmProgram *llvm.LLVMProgram, funcEntry
 
 	currBlock := entryBlk
 
-	retReg := llvm.NewLLVMRegister("_ret_val", st.NewVarEntry("returnVal", funcEntry.RetTy, st.LOCAL, funcEntry.Token))
-	llvmProgram.RetRegisters[f.id] = retReg
-	currBlock.Instns = append(currBlock.Instns, llvm.NewAllocateInstn(retReg, funcEntry.RetTy))
+	var retReg *llvm.LLVMRegister
+	if funcEntry.RetTy != types.NilTySig {
+		retVarEntry := st.NewVarEntry("returnVal", funcEntry.RetTy, st.LOCAL, funcEntry.Token)
+		retReg = llvm.NewLLVMRegister("_ret_val", retVarEntry, true)
+		llvmProgram.RetRegisters[f.id] = retReg
+		llvmProgram.EntryRegMap[retVarEntry] = retReg
+		// currBlock.Instns = append(currBlock.Instns, llvm.NewAllocateInstn(retReg, funcEntry.RetTy))
+		currBlock.AddInstn(llvm.NewAllocateInstn(retReg, funcEntry.RetTy))
+		if funcEntry.Name == "main" {
+			// currBlock.Instns = append(currBlock.Instns, llvm.NewStoreInstn(retReg, retReg.GetType(), llvm.NewLLVMImmediate(0, types.IntTySig), types.IntTySig))	
+			currBlock.AddInstn(llvm.NewStoreInstn(retReg, retReg.GetType(), llvm.NewLLVMImmediate(0, types.IntTySig), types.IntTySig))
+		}
+	}
 
-	for name, param := range funcEntry.Parameters.GetTable() {
-		paramReg := llvm.NewLLVMRegister(name, param)
-		llvmProgram.AddEntryRegister(param, paramReg)
-		localRegName := fmt.Sprintf("_P_%s", name)
-		localParamReg := llvm.NewLLVMRegister(localRegName, param)
-		currBlock.Instns = append(currBlock.Instns, llvm.NewAllocateInstn(localParamReg, param.Ty))
-		currBlock.Instns = append(currBlock.Instns, llvm.NewStoreInstn(localParamReg, localParamReg.GetType(), paramReg, paramReg.GetType()))
+	for _, paramEntry := range funcEntry.Parameters.GetOrderedEntries() {
+		paramReg := llvm.NewLLVMRegister(paramEntry.Name, paramEntry, false)
+		localRegName := fmt.Sprintf("_P_%s", paramEntry.Name)
+		localParamReg := llvm.NewLLVMRegister(localRegName, paramEntry, true)
+		llvmProgram.ParamRegisters[f.id] = append(llvmProgram.ParamRegisters[f.id], paramReg)
+		llvmProgram.AddEntryRegister(paramEntry, localParamReg)
+		// currBlock.Instns = append(currBlock.Instns, llvm.NewAllocateInstn(localParamReg, param.Ty))
+		currBlock.AddInstn(llvm.NewAllocateInstn(localParamReg, paramEntry.Ty))
+		// currBlock.Instns = append(currBlock.Instns, llvm.NewStoreInstn(localParamReg, localParamReg.GetType(), paramReg, paramReg.GetType()))
+		currBlock.AddInstn(llvm.NewStoreInstn(localParamReg, localParamReg.GetType(), paramReg, paramReg.GetType()))
 	}
 
 	currBlock = f.declarations.(*Declarations).TranslateToLLVMStack(currBlock, exitBlk, llvmProgram, funcEntry, tables)
 
 	currBlock = f.statements.TranslateToLLVMStack(currBlock, exitBlk, llvmProgram, funcEntry, tables)
-	currBlock.Succs = append(currBlock.Succs, exitBlk)
-	currBlock.Instns = append(currBlock.Instns, llvm.NewJumpInstn(exitBlk))
+	// currBlock.Succs = append(currBlock.Succs, exitBlk)
+	currBlock.AddSucc(exitBlk)
+	exitBlk.AddPred(currBlock)
+	// currBlock.Instns = append(currBlock.Instns, llvm.NewJumpInstn(exitBlk))
+	currBlock.AddInstn(llvm.NewJumpInstn(exitBlk))
 
-	tempReg := llvm.NewLLVMRegister(llvmProgram.GenerateRegisterName(), st.NewVarEntry("tempRet", funcEntry.RetTy, st.LOCAL, funcEntry.Token))
-	exitBlk.Instns = append(exitBlk.Instns, llvm.NewLoadInstn(tempReg, tempReg.GetType(), retReg, retReg.GetType()))
-	exitBlk.Instns = append(exitBlk.Instns, llvm.NewReturnInstn(tempReg))
-
+	if funcEntry.RetTy != types.NilTySig {
+		tempReg := llvm.NewLLVMRegister(llvmProgram.GenerateRegisterName(), st.NewVarEntry("tempRet", funcEntry.RetTy, st.LOCAL, funcEntry.Token), false)
+		// exitBlk.Instns = append(exitBlk.Instns, llvm.NewLoadInstn(tempReg, tempReg.GetType(), retReg, retReg.GetType()))
+		exitBlk.AddInstn(llvm.NewLoadInstn(tempReg, tempReg.GetType(), retReg, retReg.GetType()))
+		// exitBlk.Instns = append(exitBlk.Instns, llvm.NewReturnInstn(tempReg))
+		exitBlk.AddInstn(llvm.NewReturnInstn(tempReg))
+	} else {
+		// exitBlk.Instns = append(exitBlk.Instns, llvm.NewReturnInstn(nil))
+		exitBlk.AddInstn(llvm.NewReturnInstn(nil))
+	}
+	
 	return llvmProgram
 }

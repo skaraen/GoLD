@@ -2,7 +2,10 @@ package llvm
 
 import (
 	"fmt"
+	"golite/arm"
 	"golite/cfg"
+	"golite/operators"
+	st "golite/symboltable"
 )
 
 type BranchInstn struct {
@@ -31,5 +34,20 @@ func (b *BranchInstn) GetDef() *LLVMRegister {
 }
 
 func (b *BranchInstn) Mem2Reg(defs map[string]LLVMOperand, predLbl string, currBlock *cfg.Block) bool {
-	return false
+	if defEntry := defs[b.indicator.GetName()]; defEntry != nil {
+		b.indicator = defEntry.(*LLVMRegister)
+	}
+
+	return true
+}
+
+func (b *BranchInstn) TranslateToAssembly(tables *st.SymbolTables) []arm.Instruction {
+	var armInstns []arm.Instruction
+
+	operator := operators.StrToOp(b.indicator.entry.Name)
+
+	armInstns = append(armInstns, arm.NewBranchInstn(operator, b.trueBlk.Label))
+	armInstns = append(armInstns, arm.NewJumpInstn(b.falseBlk.Label))
+
+	return armInstns
 }

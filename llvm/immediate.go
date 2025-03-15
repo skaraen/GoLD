@@ -1,6 +1,7 @@
 package llvm
 
 import (
+	"fmt"
 	"golite/types"
 	"strconv"
 )
@@ -18,7 +19,14 @@ func (i *LLVMImmediate) GetType() types.Type {
 	return i.iTy
 }
 
+func (i *LLVMImmediate) SetType(ty types.Type) {
+	i.iTy = ty
+}
+
 func (i *LLVMImmediate) String() string {
+	if _, ok := i.iTy.(*types.PointerTy); ok {
+		return "null"
+	}
 	return strconv.FormatInt(i.val, 10)
 }
 
@@ -28,4 +36,8 @@ func (i *LLVMImmediate) GetName() string {
 
 func (i *LLVMImmediate) Mem2RegIsLocal() bool {
 	return false
+}
+
+func (i *LLVMImmediate) GetAssemblyId() string {
+	return fmt.Sprintf("#%d", i.val)
 }

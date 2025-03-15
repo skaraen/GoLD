@@ -2,7 +2,9 @@ package llvm
 
 import (
 	"fmt"
+	"golite/arm"
 	"golite/cfg"
+	st "golite/symboltable"
 )
 
 type JumpInstn struct {
@@ -28,5 +30,13 @@ func (j *JumpInstn) GetDef() *LLVMRegister {
 }
 
 func (j *JumpInstn) Mem2Reg(defs map[string]LLVMOperand, predLbl string, currBlock *cfg.Block) bool {
-	return false
+	return true
+}
+
+func (j *JumpInstn) TranslateToAssembly(tables *st.SymbolTables) []arm.Instruction {
+	var armInstns []arm.Instruction
+
+	armInstns = append(armInstns, arm.NewJumpInstn(j.targetBlk.Label))
+
+	return armInstns
 }

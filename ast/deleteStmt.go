@@ -41,9 +41,12 @@ func (ds *DeleteStmt) TypeCheck(errors []*context.CompilerError, funcEntry *st.F
 }
 
 func (ds *DeleteStmt) TranslateToLLVMStack(currBlk *cfg.Block, exitBlk *cfg.Block, llvmProgram *llvm.LLVMProgram, funcEntry *st.FuncEntry, tables *st.SymbolTables) *cfg.Block {
-	temp1 := ds.expr.TranslateToLLVMStack(funcEntry, tables, currBlk, llvmProgram).(*llvm.LLVMRegister)
-	temp2 := llvm.NewLLVMRegister(llvmProgram.GenerateRegisterName(), nil)
+	op := ds.expr.TranslateToLLVMStack(funcEntry, tables, currBlk, llvmProgram).(*llvm.LLVMRegister)
+	bitcastPtr := llvm.NewLLVMRegister(llvmProgram.GenerateRegisterName(), st.NewVarEntry(ds.String(), types.Int8PtrTySig, st.LOCAL, ds.Token), false)
 
-	currBlk.Instns = append(currBlk.Instns, llvm.NewDeleteInstn(temp1, temp2))
+	// currBlk.Instns = append(currBlk.Instns, llvm.NewBitcastInstn(bitcastPtr, op))
+	currBlk.AddInstn(llvm.NewBitcastInstn(bitcastPtr, op))
+	// currBlk.Instns = append(currBlk.Instns, llvm.NewDeleteInstn(bitcastPtr))
+	currBlk.AddInstn(llvm.NewDeleteInstn(bitcastPtr))
 	return currBlk
 }

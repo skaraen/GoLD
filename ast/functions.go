@@ -89,6 +89,7 @@ func (f *Functions) TypeCheck(errors []*context.CompilerError, tables *st.Symbol
 }
 
 func (f *Functions) TranslateToLLVMStack(llvmProgram *llvm.LLVMProgram, tables *st.SymbolTables) *llvm.LLVMProgram {
+	tables.Funcs.GetTable()["main"].RetTy = types.IntTySig
 	for _, fn := range (f.funcList) {
 		fnEntry, _ := tables.Funcs.Contains(fn.id)
 		llvmProgram = fn.TranslateToLLVMStack(llvmProgram, fnEntry, tables)

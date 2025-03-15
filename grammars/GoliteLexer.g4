@@ -1,4 +1,5 @@
 lexer grammar GoliteLexer; 
+COMMENT: '//' ~[\r\n]* -> skip;
 
 TYPE: 'type';
 

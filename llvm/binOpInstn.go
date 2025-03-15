@@ -2,8 +2,10 @@ package llvm
 
 import (
 	"fmt"
+	"golite/arm"
 	"golite/cfg"
 	op "golite/operators"
+	st "golite/symboltable"
 	"golite/types"
 )
 
@@ -23,9 +25,9 @@ func (b *BinOpInstn) String() string {
 	str := ""
 
 	if op.IsArithmeticOp(b.operator) || op.IsLogicalOp(b.operator) {
-		str = fmt.Sprintf("%s = %s %s %s, %s", b.dest.String(), op.OpToLLVM(b.operator), types.TypesToLLVMTypes(b.dest.entry.Ty), b.op1.String(), b.op2.String())
-	} else if op.IsComparisonOp(b.operator) {
-		str = fmt.Sprintf("%s = icmp %s %s %s, %s", b.dest.String(), op.OpToLLVM(b.operator), types.TypesToLLVMTypes(b.dest.entry.Ty), b.op1.String(), b.op2.String())
+		str = fmt.Sprintf("%s = %s %s %s, %s", b.dest.String(), op.OpToLLVM(b.operator), types.TypesToLLVMTypes(b.op1.GetType()), b.op1.String(), b.op2.String())
+	} else if op.IsComparisonOp(b.operator) || op.IsEqualityOp(b.operator) {
+		str = fmt.Sprintf("%s = icmp %s %s %s, %s", b.dest.String(), op.OpToLLVM(b.operator), types.TypesToLLVMTypes(b.op1.GetType()), b.op1.String(), b.op2.String())
 	}
 
 	return str
@@ -43,5 +45,19 @@ func (b *BinOpInstn) GetDef() *LLVMRegister {
 }
 
 func (b *BinOpInstn) Mem2Reg(defs map[string]LLVMOperand, predLbl string, currBlock *cfg.Block) bool {
-	return false
+	if defEntry := defs[b.op1.GetName()]; defEntry != nil {
+		b.op1 = defEntry
+	}
+
+	if defEntry := defs[b.op2.GetName()]; defEntry != nil {
+		b.op2 = defEntry
+	}
+
+	return true
+}
+
+func (b *BinOpInstn) TranslateToAssembly(tables *st.SymbolTables) []arm.Instruction {
+	var armInstns []arm.Instruction
+
+	return armInstns
 }

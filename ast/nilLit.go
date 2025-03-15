@@ -31,5 +31,5 @@ func (nilLit *NilLit) TypeCheck(errors []*context.CompilerError, funcEntry *st.F
 }
 
 func (nilLit *NilLit) TranslateToLLVMStack(funcEntry *st.FuncEntry, tables *st.SymbolTables, currBlk *cfg.Block, llvmProgram *llvm.LLVMProgram) llvm.LLVMOperand {
-	return nil
+	return llvm.NewLLVMImmediate(0, types.NilTySig)
 }

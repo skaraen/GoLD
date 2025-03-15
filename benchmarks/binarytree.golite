@@ -5,7 +5,7 @@ type Node struct {
     right *Node;  
 }; 
 
-var root *Node; 
+var  root *Node; 
 
 func compare(cur int,neuw int) int {
 
@@ -19,14 +19,15 @@ func compare(cur int,neuw int) int {
 		}
 	}
 }
-
 func addNode (numAdd int, curr *Node) { 
-    var compVal int;
+	var compVal int;
     var newNode *Node;
 
-    if( curr == nil ){
+	if( curr == nil ){
 		newNode = new Node;
 		newNode.value = numAdd;
+		newNode.left = nil; 
+		newNode.right = nil; 
 		root = newNode;
 	} else {
 		compVal = compare (curr.value, numAdd);
@@ -35,6 +36,8 @@ func addNode (numAdd int, curr *Node) {
 			if(curr.left == nil) {
 				newNode = new Node;
 				newNode.value = numAdd;
+				newNode.left = nil; 
+				newNode.right = nil; 
 				curr.left = newNode;
 			} else {
 				addNode ( numAdd, curr.left);
@@ -44,6 +47,8 @@ func addNode (numAdd int, curr *Node) {
 				if(curr.right == nil) {
 					newNode = new Node;
 					newNode.value = numAdd;
+					newNode.left = nil; 
+					newNode.right = nil; 
 					curr.right = newNode;
 				} else {
 					addNode ( numAdd, curr.right);
@@ -52,7 +57,6 @@ func addNode (numAdd int, curr *Node) {
 		}
 	}
 }
-
 func printDepthTree (curr *Node)  {
     var temp int;
 	if( curr != nil ) {
@@ -67,7 +71,6 @@ func printDepthTree (curr *Node)  {
 		}
 	}
 }
-
 func deleteLeavesTree (curr *Node) {
 	if( curr != nil ) {
 		if( curr.left != nil) {

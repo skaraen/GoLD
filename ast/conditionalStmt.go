@@ -57,18 +57,28 @@ func (cs *ConditionalStmt) TranslateToLLVMStack(currBlk *cfg.Block, exitBlk *cfg
 	trueBlk, falseBlk, exitIfBlk := cfg.NewIfBlock(currBlk, exitBlk, labels[0], labels[1], labels[2])
 	condReg := cs.expr.TranslateToLLVMStack(funcEntry, tables, currBlk, llvmProgram).(*llvm.LLVMRegister)
 	
-	currBlk.Instns = append(currBlk.Instns, llvm.NewBranchInstn(condReg, trueBlk, falseBlk))
-	
+	// currBlk.Instns = append(currBlk.Instns, llvm.NewBranchInstn(condReg, trueBlk, falseBlk))
+	currBlk.AddInstn(llvm.NewBranchInstn(condReg, trueBlk, falseBlk))
 	currTrueBlk := cs.ifBlock.TranslateToLLVMStack(trueBlk, exitBlk, llvmProgram, funcEntry, tables)
-	currTrueBlk.Instns = append(currTrueBlk.Instns, llvm.NewJumpInstn(exitIfBlk))
-	currTrueBlk.Succs = append(currTrueBlk.Succs, exitIfBlk)
+	// currTrueBlk.Instns = append(currTrueBlk.Instns, llvm.NewJumpInstn(exitIfBlk))
+	currTrueBlk.AddInstn(llvm.NewJumpInstn(exitIfBlk))
+	
+	if !currTrueBlk.IsReturning {
+		currTrueBlk.AddSucc(exitIfBlk)
+		exitIfBlk.AddPred(currTrueBlk)
+	}
 	
 	currFalseBlk := falseBlk
 	if cs.elseBlock != nil {
 		currFalseBlk = cs.elseBlock.TranslateToLLVMStack(falseBlk, exitBlk, llvmProgram, funcEntry, tables)
 	}
-	currFalseBlk.Instns = append(currFalseBlk.Instns, llvm.NewJumpInstn(exitIfBlk))
-	currFalseBlk.Succs = append(currFalseBlk.Succs, exitIfBlk)
+	// currFalseBlk.Instns = append(currFalseBlk.Instns, llvm.NewJumpInstn(exitIfBlk))
+	currFalseBlk.AddInstn(llvm.NewJumpInstn(exitIfBlk))
+	
+	if !currFalseBlk.IsReturning {
+		currFalseBlk.AddSucc(exitIfBlk)
+		exitIfBlk.AddPred(currFalseBlk)
+	}
 
 	return exitIfBlk
 }

@@ -67,11 +67,12 @@ func (d *Declaration) TranslateToLLVMStack(currBlk *cfg.Block, exitBlk *cfg.Bloc
 
 	for _, id := range (idsList) {
 		varEntry, _ := funcEntry.Variables.Contains(id)
-		idRegister := llvm.NewLLVMRegister(varEntry.Name, varEntry)
+		idRegister := llvm.NewLLVMRegister(varEntry.Name, varEntry, true)
 		llvmProgram.AddEntryRegister(varEntry, idRegister)
 	
 		allocateInstn := llvm.NewAllocateInstn(idRegister, d.declType)
-		currBlk.Instns = append(currBlk.Instns, allocateInstn)
+		// currBlk.Instns = append(currBlk.Instns, allocateInstn)
+		currBlk.AddInstn(allocateInstn)
 	}
 	
 	return currBlk

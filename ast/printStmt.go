@@ -10,7 +10,6 @@ import (
 	"golite/token"
 	"golite/types"
 	"regexp"
-	"strings"
 )
 
 type PrintStmt struct {
@@ -65,17 +64,9 @@ func (ps *PrintStmt) TypeCheck(errors []*context.CompilerError, funcEntry *st.Fu
 	return errors
 }
 
-func (ps *PrintStmt) ReplaceForLLVMFormat() string {
-	modified := strings.ReplaceAll(ps.str, "%d", "%ld")
-	modified = strings.ReplaceAll(modified, "\n", "\\0A")
-	modified += "\\00"
-
-	return modified
-}
-
 func (ps *PrintStmt) TranslateToLLVMStack(currBlk *cfg.Block, exitBlk *cfg.Block, llvmProgram *llvm.LLVMProgram, funcEntry *st.FuncEntry, tables *st.SymbolTables) *cfg.Block {
-	modified := ps.ReplaceForLLVMFormat()
-	id := llvmProgram.AddFormatStr(modified)
+	_, goMod := llvmProgram.ReplaceForLLVMFormat(ps.str)
+	id := llvmProgram.AddFormatStr(ps.str)
 
 	var argList []llvm.LLVMOperand
 	for _, arg := range ps.args {
@@ -83,7 +74,8 @@ func (ps *PrintStmt) TranslateToLLVMStack(currBlk *cfg.Block, exitBlk *cfg.Block
 		argList = append(argList, reg)
 	}
 
-	currBlk.Instns = append(currBlk.Instns, llvm.NewPrintInstn(id, argList))
+	// currBlk.Instns = append(currBlk.Instns, llvm.NewPrintInstn(id, goMod, argList))
+	currBlk.AddInstn(llvm.NewPrintInstn(id, goMod, argList))
 	
 	return currBlk
 }

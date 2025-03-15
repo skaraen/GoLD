@@ -12,6 +12,18 @@ func (intTy *IntTy) String() string {
 	return "int"
 }
 
+type Int1Ty struct {}
+
+func (int1Ty *Int1Ty) String() string {
+	return "int1"
+}
+
+type Int8PtrTy struct {}
+
+func (int8Ty *Int8PtrTy) String() string {
+	return "*int8"
+}
+
 type BoolTy struct {}
 
 func (boolTy *BoolTy) String() string {
@@ -47,6 +59,10 @@ func (undefTy *UndefTy) String() string {
 func StringToType(str string) Type {
 	if str == "int" {
 		return IntTySig
+	} else if str == "int1" {
+		return Int1TySig
+	} else if str == "*int8" {
+		return Int8PtrTySig
 	} else if str == "bool" {
 		return BoolTySig
 	} else if str == "string" {
@@ -64,6 +80,8 @@ func StringToType(str string) Type {
 }
 
 var IntTySig *IntTy
+var Int1TySig *Int1Ty
+var Int8PtrTySig *Int8PtrTy
 var BoolTySig *BoolTy
 var StrTySig *StrTy
 var NilTySig *NilTy
@@ -72,6 +90,8 @@ var userTypes map[string]Type
 
 func init() {
 	IntTySig = &IntTy{}
+	Int1TySig = &Int1Ty{}
+	Int8PtrTySig = &Int8PtrTy{}
 	BoolTySig = &BoolTy{}
 	StrTySig = &StrTy{}
 	NilTySig = &NilTy{}
@@ -92,6 +112,10 @@ func TypesToLLVMTypes(ty Type) string {
 
 	if ty == IntTySig || ty == BoolTySig {
 		str = "i64"
+	} else if ty == Int1TySig {
+		str = "i1"
+	} else if ty == Int8PtrTySig {
+		str = "i8*"
 	} else if pTy, ok := ty.(*PointerTy); ok {
 		str = fmt.Sprintf("%%struct.%s*", pTy.id)
 	} else if ty == NilTySig {

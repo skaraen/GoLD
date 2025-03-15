@@ -44,11 +44,14 @@ func (ins *Instantiation) TypeCheck(errors []*context.CompilerError, funcEntry *
 }
 
 func (ins *Instantiation) TranslateToLLVMStack(funcEntry *st.FuncEntry, tables *st.SymbolTables, currBlk *cfg.Block, llvmProgram *llvm.LLVMProgram) llvm.LLVMOperand {
-	temp1 := llvm.NewLLVMRegister(llvmProgram.GenerateRegisterName(), nil)
-	temp2 := llvm.NewLLVMRegister(llvmProgram.GenerateRegisterName(), st.NewVarEntry(ins.String(), ins.GetType(funcEntry, tables), st.LOCAL, ins.Token))
+	mallocPtr := llvm.NewLLVMRegister(llvmProgram.GenerateRegisterName(), st.NewVarEntry(ins.String(), types.Int8PtrTySig, st.LOCAL, ins.Token), false)
+	dest := llvm.NewLLVMRegister(llvmProgram.GenerateRegisterName(), st.NewVarEntry(ins.String(), ins.GetType(funcEntry, tables), st.LOCAL, ins.Token), false)
 
 	structEntry, _ := tables.Structs.Contains(ins.id)
-	currBlk.Instns = append(currBlk.Instns, llvm.NewInstantInstn(structEntry, temp1, temp2))
+	// currBlk.Instns = append(currBlk.Instns, llvm.NewMallocInstn(structEntry, mallocPtr))
+	currBlk.AddInstn(llvm.NewMallocInstn(structEntry, mallocPtr))
+	// currBlk.Instns = append(currBlk.Instns, llvm.NewBitcastInstn(dest, mallocPtr))
+	currBlk.AddInstn(llvm.NewBitcastInstn(dest, mallocPtr))
 	
-	return temp2
+	return dest
 }

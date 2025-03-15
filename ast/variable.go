@@ -45,10 +45,21 @@ func (v *Variable) TypeCheck(errors []*context.CompilerError, funcEntry *st.Func
 
 func (v *Variable) TranslateToLLVMStack(funcEntry *st.FuncEntry, tables *st.SymbolTables, currBlk *cfg.Block, llvmProgram *llvm.LLVMProgram) llvm.LLVMOperand {
 	varEntry,_ := funcEntry.Variables.Contains(v.identifier)
-	llvmOperand := llvm.NewLLVMRegister(llvmProgram.GenerateRegisterName(), varEntry)
+	register := llvm.NewLLVMRegister(llvmProgram.GenerateRegisterName(), st.NewVarEntry(varEntry.Name, varEntry.Ty, st.LOCAL, v.Token), false)
 	varRegister := llvmProgram.EntryRegMap[varEntry]
-	loadInstn := llvm.NewLoadInstn(llvmOperand, v.iType, varRegister, v.iType)
-	currBlk.Instns = append(currBlk.Instns, loadInstn)
+	// fmt.Println(varRegister)
+	loadInstn := llvm.NewLoadInstn(register, v.iType, varRegister, v.iType)
+	// currBlk.Instns = append(currBlk.Instns, loadInstn)
+	currBlk.AddInstn(loadInstn)
 
-	return llvmOperand
+	if v.iType == types.BoolTySig {
+		newRegister := llvm.NewLLVMRegister(llvmProgram.GenerateRegisterName(), st.NewVarEntry(varEntry.Name, types.Int1TySig, st.LOCAL, v.Token), false)
+		truncInstn := llvm.NewTruncInstn(newRegister, newRegister.GetType(), register, register.GetType())
+		// currBlk.Instns = append(currBlk.Instns, truncInstn)
+		currBlk.AddInstn(truncInstn)
+
+		return newRegister
+	}
+
+	return register
 }

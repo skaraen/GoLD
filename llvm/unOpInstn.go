@@ -2,8 +2,10 @@ package llvm
 
 import (
 	"fmt"
+	"golite/arm"
 	"golite/cfg"
 	op "golite/operators"
+	st "golite/symboltable"
 	"golite/types"
 )
 
@@ -22,9 +24,9 @@ func (u *UnOpInstn) String() string {
 	str := ""
 
 	if u.operator == op.MINUS {
-		str = fmt.Sprintf("%s = mul %s %s, -1", u.dest.String(), types.TypesToLLVMTypes(u.dest.entry.Ty), u.operand.String())
+		str = fmt.Sprintf("%s = sub %s 0, %s", u.dest.String(), types.TypesToLLVMTypes(u.operand.GetType()), u.operand.String())
 	} else if u.operator == op.NOT {
-		str = fmt.Sprintf("%s = xor %s %s, 1", u.dest.String(), types.TypesToLLVMTypes(u.dest.entry.Ty), u.operand.String())
+		str = fmt.Sprintf("%s = xor %s %s, 1", u.dest.String(), types.TypesToLLVMTypes(u.operand.GetType()), u.operand.String())
 	}
 
 	return str
@@ -41,5 +43,14 @@ func (u *UnOpInstn) GetDef() *LLVMRegister {
 }
 
 func (u *UnOpInstn) Mem2Reg(defs map[string]LLVMOperand, predLbl string, currBlock *cfg.Block) bool {
-	return false
+	if defEntry := defs[u.operand.GetName()]; defEntry != nil {
+		u.operand = defEntry
+	}
+	return true
+}
+
+func (u *UnOpInstn) TranslateToAssembly(tables *st.SymbolTables) []arm.Instruction {
+	var armInstns []arm.Instruction
+
+	return armInstns
 }

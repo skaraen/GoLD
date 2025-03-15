@@ -94,23 +94,7 @@ func (b *BinaryOp) TypeCheck(errors []*context.CompilerError, funcEntry *st.Func
 			}
 		} else {
 			binTy = types.StringToType("bool")
-		}
-
-		// if b.leftInfType == types.StringToType("bool") || b.leftInfType == types.StringToType("int") || b.leftInfType == types.StringToType("string") {
-		// 	if b.leftInfType != b.rightInfType {
-		// 		msg := fmt.Sprintf("operands not of same type to apply %s operator, (%s) is of %s type and (%s) is of %s type", OpToStr(b.operator), b.left.String(), b.leftInfType, b.right.String(), b.rightInfType)
-		// 		semError := context.NewCompilerError(b.Line, b.Column, msg, context.SEMANTICS)
-		// 		errors = append(errors, semError)
-		// 	} else {
-		// 		binTy = types.StringToType("bool")
-		// 	}
-		// } else {
-		// 	if b.leftInfType != types.StringToType("nil") && b.rightInfType != types.StringToType("nil") && b.leftInfType != b.rightInfType {
-		// 		msg := fmt.Sprintf("operands not of same reference type to apply %s operator, (%s) is of %s type and (%s) is of %s type", OpToStr(b.operator), b.left.String(), b.leftInfType, b.right.String(), b.rightInfType)
-		// 		semError := context.NewCompilerError(b.Line, b.Column, msg, context.SEMANTICS)
-		// 		errors = append(errors, semError)
-		// 	}
-		// }		
+		}		
 	} else {
 		if b.leftInfType != b.rightInfType {
 			msg := fmt.Sprintf("operands not of same type to apply %s operator, (%s) is of %s type and (%s) is of %s type", op.OpToStr(b.operator), b.left.String(), b.leftInfType, b.right.String(), b.rightInfType)
@@ -147,17 +131,28 @@ func (b *BinaryOp) TranslateToLLVMStack(funcEntry *st.FuncEntry, tables *st.Symb
 	var instn llvm.LLVMInstruction
 	lOperand = b.left.TranslateToLLVMStack(funcEntry, tables, currBlk, llvmProgram)
 
-	destEntry := st.NewVarEntry(b.String(), b.GetType(funcEntry, tables), st.LOCAL, b.Token)
-	funcEntry.Expressions.Insert(destEntry.Name, destEntry)
-	destRegister := llvm.NewLLVMRegister(llvmProgram.GenerateRegisterName(), destEntry)
-
+	var destPtrReg *llvm.LLVMRegister
 	if (b.operator == op.DOT) {
-		instn = llvm.NewGetElementInstn(destRegister, lOperand, b.right.String(), tables)
+		destPtrReg = llvm.NewLLVMRegister(llvmProgram.GenerateRegisterName(), st.NewVarEntry(b.String(), b.GetType(funcEntry, tables), st.LOCAL, b.Token), false)
+		getElementInstn := llvm.NewGetElementInstn(destPtrReg, lOperand, b.right.String(), tables)
+		currBlk.AddInstn(getElementInstn)
 	} else {
 		rOperand = b.right.TranslateToLLVMStack(funcEntry, tables, currBlk, llvmProgram)
+		if rOperand.GetType() == types.NilTySig {
+			rOperand.SetType(lOperand.GetType())
+		}
+	}
+
+	destEntry := st.NewVarEntry(op.OpToStr(b.operator), b.GetType(funcEntry, tables), st.LOCAL, b.Token)
+	funcEntry.Expressions.Insert(destEntry.Name, destEntry)
+	destRegister := llvm.NewLLVMRegister(llvmProgram.GenerateRegisterName(), destEntry, false)
+
+	if (b.operator == op.DOT) {
+		instn = llvm.NewLoadInstn(destRegister, destRegister.GetType(), destPtrReg, destPtrReg.GetType())
+	} else {		
 		instn = llvm.NewBinOpInstn(destRegister, b.operator, lOperand, rOperand, b.leftInfType)
 	}
 
-	currBlk.Instns = append(currBlk.Instns, instn)
+	currBlk.AddInstn(instn)
 	return destRegister
 }

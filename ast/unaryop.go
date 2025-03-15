@@ -57,12 +57,13 @@ func (u *UnaryOp) TypeCheck(errors []*context.CompilerError, funcEntry *st.FuncE
 func (u *UnaryOp) TranslateToLLVMStack(funcEntry *st.FuncEntry, tables *st.SymbolTables, currBlk *cfg.Block, llvmProgram *llvm.LLVMProgram) llvm.LLVMOperand {
 	rOperand := u.right.TranslateToLLVMStack(funcEntry, tables, currBlk, llvmProgram)
 
-	destEntry := st.NewVarEntry(u.String(), u.GetType(funcEntry, tables), st.LOCAL, u.Token)
+	destEntry := st.NewVarEntry(op.OpToStr(u.operator), u.GetType(funcEntry, tables), st.LOCAL, u.Token)
 	funcEntry.Expressions.Insert(destEntry.Name, destEntry)
-	destRegister := llvm.NewLLVMRegister(llvmProgram.GenerateRegisterName(), destEntry)
+	destRegister := llvm.NewLLVMRegister(llvmProgram.GenerateRegisterName(), destEntry, false)
 
 	instn := llvm.NewUnOpInstn(destRegister, u.operator, rOperand, u.rightInfType)
 
-	currBlk.Instns = append(currBlk.Instns, instn)
+	// currBlk.Instns = append(currBlk.Instns, instn)
+	currBlk.AddInstn(instn)
 	return destRegister
 }

@@ -9,6 +9,7 @@ import (
 	st "golite/symboltable"
 	"golite/token"
 	"golite/types"
+	"strings"
 )
 
 type AssignStmt struct {
@@ -51,12 +52,26 @@ func (as *AssignStmt) TypeCheck(errors []*context.CompilerError, funcEntry *st.F
 }
 
 func (as *AssignStmt) TranslateToLLVMStack(currBlk *cfg.Block, exitBlk *cfg.Block, llvmProgram *llvm.LLVMProgram, funcEntry *st.FuncEntry, tables *st.SymbolTables) *cfg.Block {
-	lRegister := as.lValue.TranslateToLLVMStack(funcEntry, tables, currBlk, llvmProgram)
-	rRegister := as.rExpression.TranslateToLLVMStack(funcEntry, tables, currBlk, llvmProgram)
-	lType := as.lValue.GetType(funcEntry, tables)
-	rType := as.rExpression.GetType(funcEntry, tables)
+	var lOperand llvm.LLVMOperand
+	if strings.Contains(as.lValue.String(), ".") {
+		as.lValue.TranslateToLLVMStack(funcEntry, tables, currBlk, llvmProgram)
+		loadInstn := currBlk.Instns[len(currBlk.Instns)-1].(*llvm.LoadInstn)
+		lOperand = loadInstn.GetUses()[0]
+		currBlk.Instns = currBlk.Instns[:len(currBlk.Instns)-1]
+		llvmProgram.RegCount--
+	} else {
+		lOperand = llvmProgram.GetRegister(funcEntry.Name, as.lValue.String())
+	}
+	
+	rOperand := as.rExpression.TranslateToLLVMStack(funcEntry, tables, currBlk, llvmProgram)
+	if rOperand.GetType() == types.NilTySig {
+		fmt.Printf("ROP: %s, %s\n", rOperand.String(), types.TypesToLLVMTypes(rOperand.GetType()))
+		rOperand.SetType(lOperand.GetType())
+		fmt.Printf("ROP: %s, %s\n", rOperand.String(), types.TypesToLLVMTypes(rOperand.GetType()))
+	}
 
-	currBlk.Instns = append(currBlk.Instns, llvm.NewStoreInstn(lRegister.(*llvm.LLVMRegister), lType, rRegister, rType))
+	// currBlk.Instns = append(currBlk.Instns, llvm.NewStoreInstn(lOperand.(*llvm.LLVMRegister), lOperand.GetType(), rOperand, rOperand.GetType()))
+	currBlk.AddInstn(llvm.NewStoreInstn(lOperand.(*llvm.LLVMRegister), lOperand.GetType(), rOperand, rOperand.GetType()))
 	
 	return currBlk
 }
