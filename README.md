@@ -1,8 +1,5 @@
 # GoLD - Go Lite Decoder
 
-## Current status
-Fully working semantic analysis. Working on LLVM IR.
-
 ## Build compiler
 ```bash
 go build -o gold golite/golite.go
