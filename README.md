@@ -1,4 +1,4 @@
-# GoLD - GoLite compiler
+# GoLD - Go Lite Decoder
 
 ## Current status
 Fully working semantic analysis. Working on LLVM IR.
